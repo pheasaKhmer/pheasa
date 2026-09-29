@@ -17,6 +17,7 @@ def load(name: str):
 check_attribution = load("check_attribution")
 validate_manifest = load("validate_manifest")
 validate_items = load("validate_items")
+validate_golden = load("validate_golden")
 
 
 def write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -28,6 +29,7 @@ def test_repo_itself_passes_all_checks():
     root = SCRIPTS.parent
     assert check_attribution.check(root) == []
     assert validate_manifest.check(root) == []
+    assert validate_golden.check(root) == []
     assert validate_items.check(root) == []
 
 
@@ -74,3 +76,67 @@ def test_canary_required_once_defined(tmp_path):
 
     write_jsonl(tmp_path / "bench" / "rc" / "test.jsonl", [{"canary": "canary-guid-1234"}, item])
     assert validate_items.check(tmp_path) == []
+
+
+GOLDEN_OK = {
+    "id": "G-0001",
+    "input": "abc",
+    "expected": "abc",
+    "source": "https://example.org/page",
+    "license": "CC-BY-4.0",
+    "retrieved": "2026-09-30",
+    "transform": "none",
+    "verified_by": "reviewer-1",
+    "verified_at": "2026-09-30",
+}
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({}, None),
+        ({"verified_by": ""}, "verified_by"),
+        ({"verified_at": "yesterday"}, "verified_at"),
+        ({"id": "7"}, "'id'"),
+        ({"license": ""}, "license"),
+        ({"input": "ask @someone"}, "handle or email"),
+        ({"expected": "mail me a@b.org"}, "handle or email"),
+        ({"options": {"strip": True}}, "options"),
+    ],
+)
+def test_golden_records(tmp_path, change, message):
+    write_jsonl(tmp_path / "tests" / "golden" / "normalization.jsonl", [{**GOLDEN_OK, **change}])
+    errors = validate_golden.check(tmp_path)
+    if message is None:
+        assert errors == []
+    else:
+        assert len(errors) == 1 and message in errors[0]
+
+
+def test_golden_ids_are_unique_and_drafts_skipped(tmp_path):
+    write_jsonl(tmp_path / "tests" / "golden" / "a.jsonl", [GOLDEN_OK, GOLDEN_OK])
+    write_jsonl(tmp_path / "tests" / "golden" / "drafts" / "d.jsonl", [{"id": "draft"}])
+    assert [e for e in validate_golden.check(tmp_path) if "duplicate" in e] != []
+    assert len(validate_golden.check(tmp_path)) == 1
+
+
+def test_golden_draft_round_trip(tmp_path, monkeypatch, capsys):
+
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    golden_draft = load("golden_draft")
+    monkeypatch.chdir(tmp_path)
+    misordered = "".join(map(chr, (0x1781, 0x17C2, 0x17D2, 0x1798, 0x179A)))
+    (tmp_path / "lines.txt").write_text(f"{misordered}\nsee @someone\n\n", encoding="utf-8")
+    out = tmp_path / "tests" / "golden" / "drafts" / "d.jsonl"
+    args = ["lines.txt", "--source", "s", "--license", "CC-BY-4.0", "--retrieved"]
+    args += ["2026-09-30", "--transform", "none", "--out", str(out)]
+    assert golden_draft.main(args) == 0
+    assert "handle or email" in capsys.readouterr().err
+    [draft] = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+    assert draft["id"] == "G-0001"
+    assert draft["expected"] == "".join(map(chr, (0x1781, 0x17D2, 0x1798, 0x17C2, 0x179A)))
+    assert draft["rules"] == ["2.2"]
+    # A draft is not golden until a person verifies it.
+    promoted = {**draft, "verified_by": "reviewer-1", "verified_at": "2026-09-30"}
+    assert validate_golden.check_fixture(draft, "d") != []
+    assert validate_golden.check_fixture(promoted, "d") == []
