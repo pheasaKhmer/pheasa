@@ -60,9 +60,10 @@ digit + coeng + khan, now replaced by the symbols U+19E0–19FF.
 - **Full sequences found: none**, in about 169 million characters (FineWeb-2 test split
   and the full Wikipedia dump), counting the two-digit form with a leading ១.
 - **The modern lunar symbols** U+19E0–19FF appear 16 times.
-- **Partial matches** occur 14 times. Twelve are a consonant, a coeng, then a khan (a
+- **Partial matches** occur 15 times. Twelve are a consonant, a coeng, then a khan (a
   subscript sign with nothing under it, just before the full stop). Two are a digit
-  followed by a coeng and then a letter or ASCII digits (for example `២០១៤្014`). By
+  followed by a coeng and then a letter or ASCII digits (for example `២០១៤្014`). One
+  is a khan followed by a coeng at the very end of an article. By
   their structure these look like typing slips rather than dates; this has not yet been
   confirmed by a native speaker.
 

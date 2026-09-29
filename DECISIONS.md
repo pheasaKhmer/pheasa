@@ -131,7 +131,7 @@ sequence is ambiguous in real data and the conversion is not reversible.
 
 **Update 2026-09-30 (Phase 2 corpus counts):** no full legacy sequence occurs in about
 169 million characters (FineWeb-2 `khm_Khmr` test split and the full Khmer Wikipedia
-dump); 14 partial matches have the structure of typing slips. The decision stands. See
+dump); 15 partial matches have the structure of typing slips. The decision stands. See
 `reports/corpus-probes.md`. Removing the
 stray coeng, rejected because it would silently destroy a possible lunar-date encoding.
 
