@@ -131,12 +131,31 @@ with another that renders identically (UTN61 pp. 28–29, "Do not use" table).
 | 3.3 | `17C1 (17BB–17BD)? 17B8` | `17BE (…)` | UTN61 p. 28 (split vowel) |
 | 3.4 | `17C1 (17BB–17BD)? 17B6` | `17C4 (…)` | UTN61 p. 28 (split vowel) |
 | 3.5 | `17BE 17BB` | `17BB 17BE` | SIL (sets up 3.6) |
-| 3.6 | -u (17BB) before an above vowel or 17D0, where a shifter was meant | 17CA after a STRONG cluster, 17C9 after a WEAK one | UTN61 pp. 24–25, 28–29 |
-| 3.7 | `17D2 179A 17D2 X` (coeng ro first) | `17D2 X 17D2 179A` | UTN61 pp. 16, 29, 35 |
+| 3.6 | -u (17BB) directly after the consonant cluster (and an optional pre-base vowel), before an above vowel or 17D0 | 17CA after a STRONG cluster, 17C9 after a WEAK one, placed before the pre-base vowel. See "Rule 3.6 in detail". | UTN61 pp. 16–17, 22–25, 28–30 |
+| 3.7 | `17D2 179A 17D2 X` (coeng ro first) | `17D2 X 17D2 179A`, repeated until no coeng ro precedes another coeng | UTN61 pp. 16, 29, 35 |
 | 3.8 | `17D2 178A` (coeng da) | `17D2 178F` (coeng ta) | UTN61 pp. 31–32; default confirmed by native-speaker review (D-008). Option `preserve_coeng_da=True` disables it. |
+| 3.9 | — | Repeat Stage 2 and rules 3.1–3.8 on the cluster until it stops changing. Rule 2.3 then applies to the result. | Pheasa (idempotence). A fold can leave the cluster unsorted or expose another fold, e.g. `1798 17BB 17BE 17BB`. The loop ends: every round either shortens the cluster, removes a -u, 17BE or coeng da, or only permutes it, and the round after a permutation-only round changes nothing. |
 
-STRONG and WEAK are the cluster classes defined in UTN61 pp. 16 and 24. Implement them
-from the UTN61 grammar and check them against the SIL oracle.
+### Rule 3.6 in detail
+
+The consonant cluster is `Base Robat? (17D2 Base)*` at the start of the sorted cluster
+(UTN61 p. 16). Rule 3.6 applies only if the -u follows it directly, or with one pre-base
+vowel 17C1–17C5 in between (UTN61 p. 18, Middle Khmer AboveVowel). Anything else in
+between, such as a shifter, ZWNJ or a second robat, means the rule does not apply.
+
+- **STRONG** (UTN61 p. 17 prose, p. 22 rules 1–3): the consonant cluster contains a
+  StrongBase consonant `1780–1783 1785–1788 178A–178D 178F–1792 1795–1797 179E–17A0 17A2`
+  (UTN61 pp. 16, 23) and no BA (1794). Otherwise it is **WEAK**. Independent vowels are
+  weak (UTN61 p. 24).
+- UTN61 p. 16 also gives STRONG as the regex `StrongContext`, used as a lookbehind, so
+  it can match a suffix of the cluster. Pheasa evaluates that regex too, with NonBA
+  widened to include independent vowels (UTN61 p. 24; SIL). If the prose and the regex
+  disagree, the -u is left alone and flagged (conflict C4).
+- STRONG: -u becomes 17CA if the next character is an AboveVowel `17B7–17BA 17BE 17DD`
+  or `17B6 17C6` (UTN61 p. 16). Not before 17D0, because samyok sannya does not push
+  triisap down (UTN61 p. 25).
+- WEAK: -u becomes 17C9 before an AboveVowel, or before 17D0 when the pre-base vowel,
+  if any, is 17C1–17C3 (UTN61 p. 16, AboveVowelSamyok).
 
 **Not done in version 1:** UTN61 p. 35 says legacy "digit + coeng + khan" lunar-date
 sequences should become U+19E0–19FF symbols. SIL's `khnormal` contains that
@@ -170,6 +189,7 @@ Issues come from a port of SIL's `khtest` (the UTN61 syllable grammar, p. 16) an
 - repeated vowels or modifiers, such as `1780 17B6 17B6`;
 - a mid-text U+FEFF;
 - legacy lunar-date sequences (see D-009);
+- a -u that rule 3.6 left unchanged because of conflict C4 or a malformed cluster (O7);
 - `17C4 17B8` produced by rule 3.2. This is valid under UTN61's Middle Khmer grammar but
   not its Modern Khmer grammar, so it is flagged for review.
 
@@ -199,6 +219,14 @@ never remove.
 
 **C3. U+17D3.** UTN61 treats it as Other; SIL's code treats it as a modifier. **Resolution:** follow the oracle and flag it (see Stage 2).
 
+**C4. STRONG: prose versus regex.** UTN61 pp. 17 and 22 say a cluster that contains BA
+is weak, whatever else it contains. The `StrongContext` regex on p. 16 is used as a
+lookbehind, so it matches any suffix of the cluster: in `1794 17D2 1780` the suffix
+`1780` is strong, and the regex says STRONG. With three or more coengs, the regex can
+also miss a strong consonant that the prose counts. The oracle follows the regex.
+**Resolution:** where the two disagree, leave the -u unchanged and flag it (O7). Q-008
+asks which reading is right.
+
 ## Differences from the oracle
 
 With default options and Khmer-only input, `normalize(x)` equals `khnormal(NFC(x))`
@@ -209,7 +237,16 @@ except in the cases below. The test suite checks each one.
 | O1 | Sorted cluster ends in COENG or ZWJ before a base (rule 2.3) | sorts; its output is not a fixed point, e.g. `1780 17D2 17CC 1781 17CC` → `1780 17CC 17D2 1781 17CC` → `1780 17CC 17CC 17D2 1781` | leaves the cluster as typed | Idempotence (test requirement 2) and "a dangling COENG is flagged, not silently fixed" |
 | O2 | Sorted cluster would end before a non-Khmer mark that NFC swaps with it (rule 2.3) | sorts; output is not NFC | leaves the cluster as typed | NFC invariance (test requirement 3). Needs non-Khmer input, so the Khmer-only differential test never sees it |
 | O3 | Leading U+FEFF (rule 1.1) | keeps it | removes it | Pheasa policy (Stage 1) |
-| O4 | Stage 3 folds | applies them | not yet implemented | Temporary. Until Stage 3 lands, the differential test compares against the oracle with its substitutions disabled (`tests/_oracle.py`), which leaves only the sort |
+| O4 | A fold leaves the cluster unsorted or exposes another fold (rule 3.9), e.g. `179F 17C1 17BB 17B7` or three coengs with coeng ro first | one pass; its output is not a fixed point (`179F 17C1 17CA 17B7`) | repeats until stable (`179F 17CA 17C1 17B7`) | Idempotence |
+| O5 | -u after a cluster whose consonants are NYO (1789) and other weak letters (rule 3.6) | leaves the -u: its S2 class has 1780 where UTN61 p. 23 has 1789 | 17C9 | UTN61 pp. 18, 23 list 1789 as weak. The oracle copies a typo from UTN61 p. 24 |
+| O6 | -u before 17D0 after a STRONG cluster, or after a WEAK cluster with pre-base vowel 17C4 or 17C5 (rule 3.6) | 17CA, or 17C9 | leaves the -u | UTN61 p. 25 (samyok sannya does not push triisap down) and p. 16 (AboveVowelSamyok allows only 17C1–17C3). Converting would change the rendering |
+| O7 | -u where UTN61's prose and regex disagree (BA followed by a strong consonant, or 3+ coengs), or where the consonant cluster is outside `Base Robat? Coengs` (e.g. two robats) (rule 3.6) | follows the regex, matched against any suffix of the cluster | leaves the -u and flags it | Conflict C4. Sources disagree, so the conservative choice applies |
+
+The differential test (`tests/test_normalize.py`) accepts a difference only when one of
+these rows can apply: O1 shows up as a new joiner + base pair in the oracle's output, O4
+as oracle output that the oracle itself changes, and O5–O7 need a -u together with
+17D0, NYO, BA, three coengs or two robats. O2 and O3 need input outside the Khmer-only
+alphabet the test uses.
 
 ## Known defects in the reference material
 
@@ -218,6 +255,12 @@ except in the cases below. The test suite checks each one.
   and NSTRONG verbose patterns are never compiled as verbose, and rule 3.6 never fires.
   The GitHub version (`flags=re.X`) is correct, and it is the oracle.
 - **Lunar-date conversion never runs** (see Stage 3).
+- **UTN61 p. 24 lists `1780` in S2B.** The same class on p. 23, and WeakBase on p. 18,
+  have `1789` (NYO) instead, and 1780 is already a strong consonant. The oracle copies
+  the p. 24 version, so -u after NYO is never converted (O5).
+- **UTN61 p. 16 NonBA lists only consonants.** p. 24 treats independent vowels as weak
+  bases that are not BA, and SIL's NonBA includes them. Pheasa includes them in the C4
+  regex check.
 
 ## Output stability
 

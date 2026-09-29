@@ -151,3 +151,28 @@ second pass breaks deduplication. Sorting repeatedly until nothing changes, reje
 because it would silently turn more of the following text into subscripts.
 
 **Decided by:** engineering, under the conservative-default rule for malformed input.
+
+## D-011 · 2026-09-30 · Rule 3.6 follows UTN #61's text where the oracle differs
+
+**Context:** Rule 3.6 turns a -u typed in place of a consonant shifter into triisap or
+muusikatoan, depending on whether the consonant cluster is STRONG. Checking the SIL
+oracle against the UTN #61 text found three problems. The oracle's weak class has
+`1780` where UTN #61 p. 23 has `1789` (NYO); the same typo is on UTN #61 p. 24. The
+oracle converts -u before samyok sannya to triisap, but UTN #61 p. 25 says samyok sannya
+does not push triisap down. And UTN #61's prose (BA always makes a cluster weak) and its
+lookbehind regex (which can match a strong consonant after a BA) disagree, and the oracle
+follows the regex. Separately, the oracle's single pass is not idempotent when a fold
+leaves the cluster unsorted.
+
+**Choice:** Pheasa treats NYO as weak, leaves -u before samyok sannya in strong clusters,
+and leaves the -u unchanged (flagged) where the prose and the regex disagree. Each
+cluster is sorted and folded repeatedly until it stops changing (rule 3.9). These are
+oracle differences O4–O7 in the spec. Q-008 asks the human which reading of the BA case
+is right.
+
+**Alternatives:** Matching the oracle exactly, rejected because it copies a typo, changes
+rendering in the samyok case, and is not idempotent. Following the prose in the BA case
+without asking, rejected because the sources conflict, so the conservative default
+applies until a native speaker decides.
+
+**Decided by:** engineering, from the UTN #61 text; the BA case is pending Q-008.
