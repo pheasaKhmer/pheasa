@@ -140,3 +140,25 @@ def test_golden_draft_round_trip(tmp_path, monkeypatch, capsys):
     promoted = {**draft, "verified_by": "reviewer-1", "verified_at": "2026-09-30"}
     assert validate_golden.check_fixture(draft, "d") != []
     assert validate_golden.check_fixture(promoted, "d") == []
+
+
+def test_sentence_split_and_review_page(tmp_path, monkeypatch):
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    drafting = load("draft_wikipedia_fixtures")
+    review = load("review_drafts")
+    ka, khan = "ក", "។"
+    text = f"{ka * 10}{khan}{ka * 12}\nshort\nmail a@b.org {ka * 10}"
+    assert drafting.sentences(text) == [ka * 10 + khan, ka * 12]
+    draft = {
+        "id": "G-0001",
+        "input": "ក្ដ",
+        "rules": ["3.8"],
+        "source": "https://example.org",
+    }
+    drafts = tmp_path / "d.jsonl"
+    drafts.write_text(json.dumps(draft) + "\n", encoding="utf-8")
+    page = tmp_path / "review.html"
+    assert review.main([str(drafts), "--html", str(page)]) == 0
+    content = page.read_text(encoding="utf-8")
+    assert 'id="G-0001"' in content
+    assert "1780 17D2 178A → 1780 17D2 178F" in content
