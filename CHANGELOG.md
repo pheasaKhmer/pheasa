@@ -19,3 +19,5 @@ All notable changes to this project are documented here. The format follows
 - Stage 3 folds (rules 3.1–3.9) with a `preserve_coeng_da` option. Rule 3.6 follows the
   text of Unicode Technical Note #61 where the SIL reference differs; the differences
   are listed in the specification (O4–O7, conflict C4).
+- Stage 4 options, all off by default: `zwsp` (`"keep"`, `"strip"`, `"space"`), `digits`
+  (`"keep"`, `"khmer"`, `"ascii"`) and `fold_deprecated`.
