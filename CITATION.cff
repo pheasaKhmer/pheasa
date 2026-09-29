@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use Pheasa, please cite it as below."
+type: software
+title: "Pheasa: Open Reference Infrastructure for Khmer Language AI"
+authors:
+  - family-names: Khim
+    given-names: Samputhy
+    alias: organi-cs
+repository-code: "https://github.com/pheasaKhmer/pheasa"
+url: "https://github.com/pheasaKhmer/pheasa"
+license: Apache-2.0
+version: 0.0.0
+keywords:
+  - Khmer
+  - natural language processing
+  - Unicode normalization
+  - benchmark
