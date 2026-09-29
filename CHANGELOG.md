@@ -31,6 +31,10 @@ All notable changes to this project are documented here. The format follows
   fails on superlinear slowdowns or throughput below a floor.
 - `scripts/check_shifter_rendering.py`, a HarfBuzz check of whether text typed with the
   consonant shifter before the subscript renders like the reordered text (conflict C1).
+- Golden fixture pipeline: format and workflow in `tests/golden/README.md`, a validator
+  (`scripts/validate_golden.py`, run by `make check`) requiring provenance, a verifier and
+  no handles or email addresses, a test that runs every fixture, and a draft tool
+  (`scripts/golden_draft.py`) for preparing candidates. No fixtures yet.
 
 ### Changed
 
