@@ -10,7 +10,7 @@ authors = [{ name = "Samputhy Khim" }]
 maintainers = [{ name = "Samputhy Khim" }]
 keywords = ["khmer", "nlp", "unicode", "normalization", "benchmark"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",

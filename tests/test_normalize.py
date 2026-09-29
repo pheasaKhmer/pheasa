@@ -309,7 +309,7 @@ def test_preserve_coeng_da():
 
 def test_public_api():
     assert pheasa.normalize is normalize
-    assert pheasa.NORMALIZATION_VERSION == "0"
+    assert pheasa.NORMALIZATION_VERSION == "1"
 
 
 # --- Properties -----------------------------------------------------------------------

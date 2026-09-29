@@ -18,9 +18,9 @@ __all__ = ["NORMALIZATION_VERSION", "DigitsOption", "ZwspOption", "normalize"]
 ZwspOption = Literal["keep", "strip", "space"]
 DigitsOption = Literal["keep", "khmer", "ascii"]
 
-# "0" means the spec is only partly implemented and output may still change. It becomes
-# "1" once every stage of spec/normalization.md is in place.
-NORMALIZATION_VERSION = "0"
+# Names the rule set in spec/normalization.md. Any change to the output for any input
+# needs a new version, a CHANGELOG entry and a DECISIONS entry (D-013).
+NORMALIZATION_VERSION = "1"
 
 BOM = "\ufeff"
 COENG = "\u17d2"
