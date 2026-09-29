@@ -26,18 +26,19 @@ td, th { border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; text-
 .khmer { font-size: 22px; line-height: 1.9; }
 code { font-size: 12px; color: #444; }
 .change { color: #a40; }
-tr.correct { background: #eef9ee; } tr.wrong { background: #fdeeee; }
+tr:has(input[value=correct]:checked) { background: #eef9ee; }
+tr:has(input[value=wrong]:checked) { background: #fdeeee; }
+label { display: block; padding: 4px 0; font-size: 16px; cursor: pointer; }
 #summary { width: 100%; height: 4em; font-family: monospace; }
 """
+# Optional: fills the summary box where the viewer allows scripts. The radio buttons
+# work without it.
 SCRIPT = """
-const marks = {};
-function mark(id, verdict) {
-  marks[id] = verdict;
-  document.getElementById(id).className = verdict;
+document.addEventListener('change', () => {
   const out = {correct: [], wrong: []};
-  for (const [k, v] of Object.entries(marks)) out[v].push(k);
+  for (const input of document.querySelectorAll('input:checked')) out[input.value].push(input.name);
   document.getElementById('summary').value = JSON.stringify(out);
-}
+});
 """
 
 
@@ -62,8 +63,8 @@ def row(draft: dict) -> str:
         f'<td class="khmer">{html.escape(draft["input"])}</td>'
         f'<td class="khmer">{html.escape(report.text)}</td>'
         f'<td>{changes}<br><a href="{html.escape(draft["source"])}">source</a></td>'
-        f"<td><button onclick=\"mark('{fid}','correct')\">correct</button> "
-        f"<button onclick=\"mark('{fid}','wrong')\">wrong</button></td></tr>"
+        f'<td><label><input type="radio" name="{fid}" value="correct"> correct</label>'
+        f'<label><input type="radio" name="{fid}" value="wrong"> wrong</label></td></tr>'
     )
 
 
@@ -86,7 +87,10 @@ def main(argv: list[str] | None = None) -> int:
         "<table><tr><th>ID / rules</th><th>Input</th><th>Output</th><th>What changed</th>"
         "<th>Verdict</th></tr>",
         *(row(draft) for draft in drafts),
-        "</table><h2>Summary to copy back</h2><textarea id=summary readonly></textarea>",
+        "</table><h2>Summary to copy back</h2>",
+        "<p>If this box stays empty (some viewers block scripts), just send the IDs you "
+        "marked wrong, for example: <code>wrong: G-0007, G-0031</code>.</p>",
+        "<textarea id=summary readonly></textarea>",
         f"<script>{SCRIPT}</script></html>",
     ]
     Path(args.html).write_text("\n".join(page), encoding="utf-8")
