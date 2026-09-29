@@ -259,8 +259,16 @@ Repeated with Noto Sans Khmer (Google Fonts, 2022 build) and Khmer OS / Khmer OS
 The grid is mostly non-words, though, and a shifter on a cluster with a subscript is rare
 in real text (Q-010). On eight plausible clusters, including the loanword spelling
 `1794 17CA 17D2 179B 17BC 1792 17BC 179F`, Noto Sans Khmer differs only on
-`1789 17C9 17D2 1799 17BC`, and Khmer OS on that one and the loanword. Q-009 asks which
-rendering is right for those two.
+`1789 17C9 17D2 1799 17BC`, and Khmer OS on that one and the loanword.
+
+In the NYO case, both fonts draw ញ in its subscript-bearing form whenever ញ is directly
+followed by a coeng, as in `1789 17D2 1787` with no shifter. In the TUS order the
+shifter sits between ញ and the coeng, so the font draws the standalone ញ instead.
+Native-speaker review confirmed that the subscript-bearing forms are the normal ones
+(Q-009, 2026-09-30). So the UTN61 order is the one these fonts render as intended.
+**Conclusion:** keep the resolution above. The loanword difference in Khmer OS is the
+case UTN61 p. 25 discusses (BA + shifter + coeng) and is recorded as a known font
+difference.
 
 **C2. ZWNJ position.** The TUS §16.4 grammar allows ZWNJ or ZWJ before a dependent vowel
 (`{Z} V`). UTN61 allows ZWNJ only after a shifter. **Resolution:** preserve and flag,
