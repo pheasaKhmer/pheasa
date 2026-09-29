@@ -6,8 +6,12 @@ Stages implemented: 1 (pre-clean), 2 (cluster reordering), 3 (folds) and 4 (opti
 
 import re
 import unicodedata
+from collections.abc import Iterator
 from enum import IntEnum
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, overload
+
+if TYPE_CHECKING:
+    from pheasa.report import Report
 
 __all__ = ["NORMALIZATION_VERSION", "DigitsOption", "ZwspOption", "normalize"]
 
@@ -234,22 +238,31 @@ def _u_to_shifter(text: str) -> str:
     return cluster + shifter + pre + text[match.end() :]
 
 
-def _fold(text: str, *, preserve_coeng_da: bool) -> str:
-    """Stage 3: replace "do not use" sequences in a sorted cluster, in spec order."""
-    text = _REPEATED_AFTER_COENG.sub(r"\1", text)  # 3.1
+def _fold(text: str, *, preserve_coeng_da: bool, fired: list[str] | None = None) -> str:
+    """Stage 3: replace "do not use" sequences in a sorted cluster, in spec order.
+
+    If `fired` is given, the ID of every rule that changed the text is appended to it.
+    """
+
+    def step(rule: str, new: str) -> str:
+        if fired is not None and new != text:
+            fired.append(rule)
+        return new
+
+    text = step("3.1", _REPEATED_AFTER_COENG.sub(r"\1", text))
     # Source: UTN #61 p. 29 (visually indistinct)
-    text = text.replace("\u17be\u17b6", "\u17c4\u17b8")  # 3.2
-    text = _E_THEN_II.sub("\u17be\\1", text)  # 3.3
-    text = _E_THEN_AA.sub("\u17c4\\1", text)  # 3.4
+    text = step("3.2", text.replace("\u17be\u17b6", "\u17c4\u17b8"))
+    text = step("3.3", _E_THEN_II.sub("\u17be\\1", text))
+    text = step("3.4", _E_THEN_AA.sub("\u17c4\\1", text))
     # Source: SIL khnormal; UTN #61 pp. 28, 30 (<17BE 17BB> stands for shifter + 17BE)
-    text = text.replace("\u17be\u17bb", "\u17bb\u17be")  # 3.5
-    text = _u_to_shifter(text)  # 3.6
+    text = step("3.5", text.replace("\u17be\u17bb", "\u17bb\u17be"))
+    text = step("3.6", _u_to_shifter(text))
     # 3.7, repeated so that a third coeng cannot leave coeng ro in front (spec O4).
     while (swapped := _COENG_RO_FIRST.sub(r"\2\1", text)) != text:
-        text = swapped
+        text = step("3.7", swapped)
     if not preserve_coeng_da:
         # Source: UTN #61 pp. 31-32; D-008
-        text = text.replace(COENG + "\u178a", COENG + "\u178f")  # 3.8
+        text = step("3.8", text.replace(COENG + "\u178a", COENG + "\u178f"))
     return text
 
 
@@ -269,53 +282,98 @@ def _sort(cluster: str) -> str:
     return "".join(cluster[k] for k in sorted(range(len(cluster)), key=keys.__getitem__))
 
 
-def _normalize_cluster(cluster: str, *, preserve_coeng_da: bool) -> str:
+def _normalize_cluster(
+    cluster: str, *, preserve_coeng_da: bool, fired: list[str] | None = None
+) -> str:
     """Stages 2 and 3 on one cluster, repeated until the result no longer changes.
 
     A fold can leave the cluster unsorted or expose another fold (rule 3.9). Each round
     either shortens the cluster, removes a -u, 17BE or coeng da, or only permutes it, and
     a round after a permutation-only round changes nothing, so the loop ends.
     """
-    while (result := _fold(_sort(cluster), preserve_coeng_da=preserve_coeng_da)) != cluster:
+    rounds = 0
+    while True:
+        ordered = _sort(cluster)
+        if fired is not None and ordered != cluster:
+            fired.append("2.2")
+        result = _fold(ordered, preserve_coeng_da=preserve_coeng_da, fired=fired)
+        if result == cluster:
+            return cluster
+        rounds += 1
+        if fired is not None and rounds == 2:
+            fired.append("3.9")
         cluster = result
-    return cluster
 
 
-def _reorder(text: str, *, preserve_coeng_da: bool = False) -> str:
-    """Stages 2 and 3: normalize each syllable cluster in turn."""
-    out: list[str] = []
+def _clusters(text: str) -> Iterator[tuple[int, int]]:
+    """Yield the (start, end) span of every syllable cluster in `text` (rule 2.1)."""
     n = len(text)
     i = 0
     while i < n:
-        ch = text[i]
-        # Rule 2.1: a cluster starts at a base that is not part of a joiner unit.
-        if _KEYS.get(ch) is not Key.BASE or (i > 0 and text[i - 1] in _JOINERS):
-            out.append(ch)
+        # A cluster starts at a base that is not part of a joiner unit.
+        if _KEYS.get(text[i]) is not Key.BASE or (i > 0 and text[i - 1] in _JOINERS):
             i += 1
             continue
         key = Key.BASE
         j = i + 1
         while j < n and (key := _key_at(text, j, key)) > Key.BASE:
             j += 1
+        yield i, j
+        i = j
+
+
+def _reorder(text: str, *, preserve_coeng_da: bool = False) -> str:
+    """Stages 2 and 3: normalize each syllable cluster in turn."""
+    out: list[str] = []
+    done = 0
+    for i, j in _clusters(text):
         cluster = text[i:j]
         result = _normalize_cluster(cluster, preserve_coeng_da=preserve_coeng_da)
         # Rule 2.3: keep the cluster as typed if the result would disturb its neighbour.
-        if j < n and not _is_stable(result, text[j]):
-            result = cluster
-        out.append(result)
-        i = j
+        if result != cluster and (j == len(text) or _is_stable(result, text[j])):
+            out += (text[done:i], result)
+            done = j
+    out.append(text[done:])
     return "".join(out)
+
+
+@overload
+def normalize(
+    text: str,
+    *,
+    report: Literal[False] = False,
+    preserve_coeng_da: bool = False,
+    zwsp: ZwspOption = "keep",
+    digits: DigitsOption = "keep",
+    fold_deprecated: bool = False,
+) -> str: ...
+
+
+@overload
+def normalize(
+    text: str,
+    *,
+    report: Literal[True],
+    preserve_coeng_da: bool = False,
+    zwsp: ZwspOption = "keep",
+    digits: DigitsOption = "keep",
+    fold_deprecated: bool = False,
+) -> "Report": ...
 
 
 def normalize(
     text: str,
     *,
+    report: bool = False,
     preserve_coeng_da: bool = False,
     zwsp: ZwspOption = "keep",
     digits: DigitsOption = "keep",
     fold_deprecated: bool = False,
-) -> str:
+) -> "str | Report":
     """Return the normalized form of `text` (spec/normalization.md).
+
+    With `report=True`, return a `pheasa.Report` instead: the normalized text, every
+    change made (with input offsets and rule IDs) and the validation issues left in it.
 
     Options (all off by default, spec Stage 4):
 
@@ -324,5 +382,15 @@ def normalize(
     - `digits`: `"keep"`, `"khmer"` (0-9 to U+17E0-17E9) or `"ascii"` (the reverse).
     - `fold_deprecated=True` replaces deprecated and discouraged Khmer characters.
     """
+    if report:
+        from pheasa.report import build_report  # imports this module
+
+        return build_report(
+            text,
+            preserve_coeng_da=preserve_coeng_da,
+            zwsp=zwsp,
+            digits=digits,
+            fold_deprecated=fold_deprecated,
+        )
     table = _option_table(zwsp, digits, fold_deprecated)
     return _reorder(_pre_clean(text, table), preserve_coeng_da=preserve_coeng_da)
