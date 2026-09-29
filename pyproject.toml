@@ -21,6 +21,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+pheasa = "pheasa.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/pheasaKhmer/pheasa"
 Repository = "https://github.com/pheasaKhmer/pheasa"
