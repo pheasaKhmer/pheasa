@@ -97,3 +97,35 @@ UTN #61 grammar and does not copy the oracle's code. No NonCommercial-licensed m
 **Alternatives:** Downloading the oracle at test time, rejected because it makes tests
 depend on the network and on upstream staying unchanged. Using the JavaScript
 `khmer-normalizer`, rejected because it would add a Node toolchain to the test suite.
+
+## D-008 · 2026-09-30 · Fold COENG DA into COENG TA by default
+
+**Context:** UTN #61 (pp. 31–32) says Modern Khmer should store coeng da
+(`17D2 178A`) as coeng ta (`17D2 178F`), because the two render identically and are
+routinely confused. Folding them loses a spelling distinction that some downstream uses
+(spell-checking, text-to-speech, orthography research) may want.
+
+**Choice:** Fold by default, matching UTN #61 and the SIL reference implementation.
+Native-speaker review confirmed that Khmer readers cannot tell the two apart without
+inspecting code points. `preserve_coeng_da=True` turns the fold off.
+
+**Alternatives:** Preserving coeng da by default, rejected because it leaves identical
+text encoded two ways, which is the problem normalization exists to solve.
+
+## D-009 · 2026-09-30 · Legacy lunar-date sequences are flagged, not converted
+
+**Context:** UTN #61 (p. 35) says legacy digit + coeng + khan sequences (for example
+`17E0 17D2 17D4`, often rendered like U+19E0) should be replaced with the Khmer lunar
+symbols U+19E0–19FF. The SIL reference implementation contains this substitution, but it
+never runs, because digits end a syllable cluster before the substitution step. Native-
+speaker review reports that digit + coeng + khan also appears in real text as typing and
+OCR errors unrelated to dates, so a blanket conversion could insert lunar symbols where
+none were meant.
+
+**Choice:** Normalization version 1 leaves these sequences unchanged and flags them in
+the validation report. Conversion will be revisited once corpus counts (Phase 2) show how
+often each reading occurs.
+
+**Alternatives:** Converting every occurrence as UTN #61 describes, rejected because the
+sequence is ambiguous in real data and the conversion is not reversible. Removing the
+stray coeng, rejected because it would silently destroy a possible lunar-date encoding.
