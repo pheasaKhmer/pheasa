@@ -25,3 +25,5 @@ All notable changes to this project are documented here. The format follows
   Technical Note #61 (issue codes V1–V9), and `normalize(text, report=True)`, which
   returns the normalized text, every change with input offsets and rule IDs, and the
   remaining issues.
+- Command-line interface: `pheasa normalize` (streams line by line, all options,
+  `--report` as JSON lines) and `pheasa validate` (exit status 1 if issues are found).
