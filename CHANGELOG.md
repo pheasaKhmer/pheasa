@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `pheasa.bench`, the benchmark harness core (D-014): versioned task specs, a
+  `--dry-run` cost estimate, a run-wide `--max-usd` budget, a permanent response cache,
+  deterministic scorers (exact match on normalized text, multiple choice, chrF++ tested
+  equal to sacreBLEU, word-boundary F1) and bootstrap confidence intervals. Run it with
+  `pheasa bench`. Only offline test models exist so far.
+- Eight draft pilot task specs in `bench/tasks/`, with a lock that requires a version
+  bump whenever a prompt changes.
+
 ## [0.1.0] - 2026-09-30
 
 First release. Fixes `NORMALIZATION_VERSION = "1"` (D-013).
