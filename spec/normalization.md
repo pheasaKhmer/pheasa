@@ -249,9 +249,11 @@ macOS (Khmer Sangam MN, Khmer MN): about 75% of the 49,000 pairs draw differentl
 about 97% of those with a vowel. Many of these differences are different glyph variants
 that may look the same. Some appear to be visibly different, such as `1798 17C9 17D2
 179B 17B6` against `1798 17D2 179B 17C9 17B6`. Apple's fonts target Core Text rather than
-HarfBuzz, so this is not yet evidence about the fonts most used in Cambodia. Q-009 asks
-for a visual review and for the fonts to test next. Until then the resolution above
-stands.
+HarfBuzz, so this is not yet evidence about the fonts most used in Cambodia.
+Native-speaker review of these renderings (Q-009, 2026-09-30) found the UTN61-order
+column mostly correct and the TUS-order renderings wrong. This supports the resolution
+above: in these fonts, reordering fixes rendering rather than changing it. The check
+still has to be repeated with Noto Sans Khmer and Khmer OS.
 
 **C2. ZWNJ position.** The TUS §16.4 grammar allows ZWNJ or ZWJ before a dependent vowel
 (`{Z} V`). UTN61 allows ZWNJ only after a shifter. **Resolution:** preserve and flag,
