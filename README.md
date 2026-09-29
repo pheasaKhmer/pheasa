@@ -25,16 +25,28 @@ them as different strings:
 | ខ្មែរ | U+1781 U+17D2 U+1798 U+17C2 U+179A | `e1 9e 81 e1 9f 92 e1 9e 98 e1 9f 82 e1 9e 9a` |
 | ខែ្មរ | U+1781 U+17C2 U+17D2 U+1798 U+179A | `e1 9e 81 e1 9f 82 e1 9f 92 e1 9e 98 e1 9e 9a` |
 
-Unicode NFC does not reconcile these. Pheasa's normalizer will, following the Khmer
+Unicode NFC does not reconcile these. Pheasa's normalizer does, following the Khmer
 encoding structure described in
 [Unicode Technical Note #61](https://www.unicode.org/notes/tn61/).
 
 ```python
-# Planned API (v0.1)
 from pheasa import normalize
 
 assert normalize("ខែ្មរ") == normalize("ខ្មែរ") == "ខ្មែរ"
 ```
+
+`normalize(text, report=True)` also returns every change it made, with input offsets
+and the rule responsible, plus any problems it could not safely fix. Options that remove
+or rewrite information (`zwsp`, `digits`, `fold_deprecated`) are off by default.
+
+From the command line:
+
+```bash
+pheasa normalize input.txt -o output.txt --report changes.jsonl
+pheasa validate input.txt
+```
+
+The rules are specified in [`spec/normalization.md`](spec/normalization.md).
 
 ## Install
 
