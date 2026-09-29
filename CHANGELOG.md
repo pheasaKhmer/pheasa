@@ -39,6 +39,14 @@ All notable changes to this project are documented here. The format follows
   (`data/wikipedia-km/manifest.jsonl`, 146 articles, CC BY-SA 4.0), a script that drafts
   fixtures from it, and an HTML review page generator.
 - 70 golden fixtures from Khmer Wikipedia, verified by a native speaker.
+- `scripts/encoding_variants.py`, which counts syllables that occur in more than one
+  encoding in a sample.
+- User guide for the normalizer (`docs/normalizer.md`).
+
+### Fixed
+
+- The source distribution no longer includes test-only license and README files.
+- README links work on the PyPI project page.
 
 ### Changed
 
