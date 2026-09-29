@@ -27,3 +27,10 @@ All notable changes to this project are documented here. The format follows
   remaining issues.
 - Command-line interface: `pheasa normalize` (streams line by line, all options,
   `--report` as JSON lines) and `pheasa validate` (exit status 1 if issues are found).
+- Throughput benchmark (`scripts/bench_throughput.py`), run by `make check` and CI, which
+  fails on superlinear slowdowns or throughput below a floor.
+
+### Changed
+
+- `normalize` reuses the result for a repeated syllable cluster within one call, roughly
+  doubling throughput. Output is unchanged.
