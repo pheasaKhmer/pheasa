@@ -244,7 +244,7 @@ the oracle follows it.
 **Rendering check (Phase 1b):** `scripts/check_shifter_rendering.py` shapes both orders
 with HarfBuzz for every consonant × shifter × subscript × vowel and compares the glyphs
 drawn (ID and position, ignoring the emission order of zero-width marks). First result,
-2026-09-30, HarfBuzz 11 via uharfbuzz 0.56.2, with the two Khmer fonts that ship with
+2026-09-30, HarfBuzz 14.5.0 via uharfbuzz 0.56.2, with the two Khmer fonts that ship with
 macOS (Khmer Sangam MN, Khmer MN): about 75% of the 49,000 pairs draw differently, and
 about 97% of those with a vowel. Many of these differences are different glyph variants
 that may look the same. Some appear to be visibly different, such as `1798 17C9 17D2
