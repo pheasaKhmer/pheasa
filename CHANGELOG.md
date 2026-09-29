@@ -46,3 +46,6 @@ Planned as 0.1.0, the first release. Fixes `NORMALIZATION_VERSION = "1"` (D-013)
 - `scripts/lunar_probe.py`, which counts and samples legacy lunar-date sequences in a
   corpus (D-009), and `scripts/tokenizer_stats.py`, which measures how many tokens public
   tokenizers spend on Khmer compared with English, before and after normalization.
+- Landscape of Khmer language technology (`reports/landscape.md`, draft): 98 datasets,
+  tools, models and benchmarks with licenses checked at the source, and a gap analysis.
+  Tables are rendered from `reports/landscape.jsonl` by `scripts/render_landscape.py`.
