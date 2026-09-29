@@ -56,7 +56,11 @@ _SYLLABLE = re.compile(
     "[\u17c7\u17c8]?"  # Final
 )
 # Source: UTN #61 p. 35; D-009 (flagged, not converted)
-_LUNAR = re.compile("[\u17e0-\u17e9]\u17d2\u17d4|\u17d4\u17d2[\u17e0-\u17e9\u17d4]")
+# An optional leading U+17E1 makes a two-digit day (10-15), as in UTN #61's example
+# 17E1 17E0 17D2 17D4 and SIL khnormal's lunar pattern.
+_LUNAR = re.compile(
+    "\u17e1?[\u17e0-\u17e9]\u17d2\u17d4|\u17d4\u17d2(?:\u17e1?[\u17e0-\u17e9]|\u17d4)"
+)
 # Marks that must belong to a syllable. U+17D3 is Other in UTN #61 (p. 16), so it may
 # stand alone; ZWNJ and ZWJ are handled separately.
 _MARKS = frozenset(ch for ch, key in _KEYS.items() if Key.ROBAT <= key <= Key.FINAL) - {

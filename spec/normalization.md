@@ -208,7 +208,7 @@ Issues use these codes, with offsets into the validated text:
 | V3 | ZWJ next to Khmer text. `ZWJ 17D2 base` is reported as a final coeng, which UTN61 allows only in Middle Khmer | UTN61 pp. 14–16 |
 | V4 | A mark that does not fit the syllable: a second vowel (including `17C4 17B8` from rule 3.2), a third modifier, 17D0 or 17DD after -u, a third coeng, a misplaced shifter or robat. A -u before an above vowel that rule 3.6 left alone (O6, O8) is reported here | UTN61 p. 16 |
 | V5 | A mark with no base before it | UTN61 p. 16 |
-| V6 | Legacy lunar-date sequence: digit + 17D2 + 17D4, or 17D4 + 17D2 + digit or 17D4 | UTN61 p. 35; D-009 |
+| V6 | Legacy lunar-date sequence: (17E1)? digit + 17D2 + 17D4, or 17D4 + 17D2 + (17E1)? digit, or 17D4 17D2 17D4 | UTN61 p. 35; SIL; D-009 |
 | V7 | U+17D3 (discouraged) | UTN61 p. 27; C3 |
 | V8 | U+FEFF after the start of the text | Rule 1.2 |
 | V9 | Cluster left as typed by rule 2.3 (report only) | Rule 2.3 |
