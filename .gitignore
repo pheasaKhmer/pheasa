@@ -15,3 +15,6 @@ htmlcov/
 
 # Raw corpora are fetched by scripts, never committed
 data/raw/
+
+# Fonts downloaded for local rendering checks (not redistributed)
+/fonts/
