@@ -241,8 +241,17 @@ the oracle follows it.
 **Consequence:** text typed the way TUS recommends will be reordered. For example,
 `1798 17C9 17D2 1784 17C3` becomes `1798 17D2 1784 17C9 17C3`.
 
-**Phase 1b task:** confirm with HarfBuzz and a common Khmer font that both orders render
-identically.
+**Rendering check (Phase 1b):** `scripts/check_shifter_rendering.py` shapes both orders
+with HarfBuzz for every consonant × shifter × subscript × vowel and compares the glyphs
+drawn (ID and position, ignoring the emission order of zero-width marks). First result,
+2026-09-30, HarfBuzz 11 via uharfbuzz 0.56.2, with the two Khmer fonts that ship with
+macOS (Khmer Sangam MN, Khmer MN): about 75% of the 49,000 pairs draw differently, and
+about 97% of those with a vowel. Many of these differences are different glyph variants
+that may look the same. Some appear to be visibly different, such as `1798 17C9 17D2
+179B 17B6` against `1798 17D2 179B 17C9 17B6`. Apple's fonts target Core Text rather than
+HarfBuzz, so this is not yet evidence about the fonts most used in Cambodia. Q-009 asks
+for a visual review and for the fonts to test next. Until then the resolution above
+stands.
 
 **C2. ZWNJ position.** The TUS §16.4 grammar allows ZWNJ or ZWJ before a dependent vowel
 (`{Z} V`). UTN61 allows ZWNJ only after a shifter. **Resolution:** preserve and flag,
