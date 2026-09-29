@@ -40,7 +40,7 @@ options last would give output that changes when normalized again.
 2. reorder     sort each syllable cluster          (UTN61)
 3. fold        do-not-use sequences -> preferred   (UTN61)
 4. options     ZWSP, digits, deprecated chars      (Pheasa policy, opt-in)
-   validate    flag non-conformant syllables       (UTN61 khtest; never modifies text)
+5. validate    flag non-conformant syllables       (UTN61 p. 16; never modifies text)
 ```
 
 ---
@@ -187,20 +187,44 @@ Middle Khmer (pp. 14–15). Occurrences anywhere else are flagged, not removed.
 
 ## Validation (report only)
 
-`normalize(text, report=True)` also returns a list of changes and issues, each with a
-character offset, a rule ID from this document, and the before and after code points.
-Issues come from a port of SIL's `khtest` (the UTN61 syllable grammar, p. 16) and cover:
+Validation never modifies text. `pheasa.validate(text)` returns the issues in any text.
+`normalize(text, report=True)` returns a `Report` with:
 
-- a dangling coeng (17D2 not followed by a base);
-- ZWNJ or ZWJ outside a permitted position;
-- repeated vowels or modifiers, such as `1780 17B6 17B6`;
-- a mid-text U+FEFF;
-- legacy lunar-date sequences (see D-009);
-- a -u that rule 3.6 left unchanged because of conflict C4 or a malformed cluster (O7);
-- `17C4 17B8` produced by rule 3.2. This is valid under UTN61's Middle Khmer grammar but
-  not its Modern Khmer grammar, so it is flagged for review.
+- `text`: the normalized text, identical to `normalize(text)` with the same options;
+- `changes`: one `Change` per edited span, in input order. Each has `start` and `end`
+  (offsets into the input), `before` (the input span), `after`, `output_start` (where
+  `after` begins in the output) and `rules`, the IDs of every rule that contributed:
+  `1.1`, `1.3`, `2.2`, `3.1`–`3.9`, `4.zwsp`, `4.digits`, `4.deprecated`. Splicing every
+  `after` into the input rebuilds the output exactly. NFC is tracked by splitting the
+  text only where NFC cannot act across the split (UAX15: the next character must
+  decompose to a starter and must not compose with what precedes it);
+- `issues`: `validate(text)` of the output, plus V9.
 
-Validation never modifies text.
+Issues use these codes, with offsets into the validated text:
+
+| Code | Issue | Source |
+|---|---|---|
+| V1 | Dangling coeng: 17D2 not followed by a base | UTN61 p. 16 (Coengs) |
+| V2 | ZWNJ other than directly after a shifter that would otherwise downshift | UTN61 p. 16 (Shifter); C2 |
+| V3 | ZWJ next to Khmer text. `ZWJ 17D2 base` is reported as a final coeng, which UTN61 allows only in Middle Khmer | UTN61 pp. 14–16 |
+| V4 | A mark that does not fit the syllable: a second vowel (including `17C4 17B8` from rule 3.2), a third modifier, 17D0 or 17DD after -u, a third coeng, a misplaced shifter or robat. A -u before an above vowel that rule 3.6 left alone (O6, O7) is reported here | UTN61 p. 16 |
+| V5 | A mark with no base before it | UTN61 p. 16 |
+| V6 | Legacy lunar-date sequence: digit + 17D2 + 17D4, or 17D4 + 17D2 + digit or 17D4 | UTN61 p. 35; D-009 |
+| V7 | U+17D3 (discouraged) | UTN61 p. 27; C3 |
+| V8 | U+FEFF after the start of the text | Rule 1.2 |
+| V9 | Cluster left as typed by rule 2.3 (report only) | Rule 2.3 |
+
+The syllable check follows the UTN61 p. 16 Modern Khmer grammar. It also accepts U+17D3
+as a modifier (C3), and accepts U+25CC DOTTED CIRCLE as a base so that a mark shown in
+isolation is not flagged (SIL `khtest` pattern `B`). Stage 2 still treats U+25CC as
+Other, as the oracle's sort does.
+
+**Differences from SIL `khtest`.** Anything `khtest` rejects, Pheasa flags. Pheasa is
+stricter in one respect: `khtest` accepts every character outside U+1780–17D2 as a
+standalone syllable, including U+17DD, ZWNJ and ZWJ. UTN61 p. 16 lists only
+`17A3 17A4 17B4 17B5 17D3–17DC` as Other, so Pheasa flags a lone 17DD (V4 or V5) and a
+stray ZWNJ or ZWJ (V2, V3). ZWJ in non-Khmer text, such as an emoji sequence, is not
+flagged.
 
 ## Conflicts between sources
 
