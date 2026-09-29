@@ -4,7 +4,7 @@
 of ភាសា, the Khmer word for "language".
 
 [![CI](https://github.com/pheasaKhmer/pheasa/actions/workflows/ci.yml/badge.svg)](https://github.com/pheasaKhmer/pheasa/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/pheasaKhmer/pheasa/blob/main/LICENSE)
 
 Pheasa aims to provide:
 
@@ -46,7 +46,8 @@ pheasa normalize input.txt -o output.txt --report changes.jsonl
 pheasa validate input.txt
 ```
 
-The rules are specified in [`spec/normalization.md`](spec/normalization.md).
+See the [user guide](https://github.com/pheasaKhmer/pheasa/blob/main/docs/normalizer.md) for options, the report format and issue
+codes. The rules are specified in [`spec/normalization.md`](https://github.com/pheasaKhmer/pheasa/blob/main/spec/normalization.md).
 
 ## Install
 
@@ -71,11 +72,11 @@ and Unicode Technical Note #61.
 
 ## Citation
 
-If you use Pheasa, please cite it using [`CITATION.cff`](CITATION.cff).
+If you use Pheasa, please cite it using [`CITATION.cff`](https://github.com/pheasaKhmer/pheasa/blob/main/CITATION.cff).
 
 ## License
 
-Code is licensed under [Apache-2.0](LICENSE). Datasets are released under CC BY 4.0
+Code is licensed under [Apache-2.0](https://github.com/pheasaKhmer/pheasa/blob/main/LICENSE). Datasets are released under CC BY 4.0
 unless their sources require stricter terms.
 
 ---
