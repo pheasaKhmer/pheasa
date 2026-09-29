@@ -217,3 +217,30 @@ because version numbers exist so that later changes can be made safely; the next
 change will simply be version "2".
 
 **Decided by:** engineering, after the human answered Q-008 and verified the fixtures.
+
+## D-014 · 2026-09-30 · Own harness core, adapters for existing frameworks
+
+**Context:** The pilot probe needs a harness. Project rules require a `--dry-run` that
+prints item count, estimated tokens and estimated USD; a `--max-usd` that aborts the
+whole run; and a permanent cache of raw responses keyed by (model, task version, prompt
+hash, parameters), so a rerun never pays twice. Adoption is more likely if people can run
+the tasks in the frameworks they already use. Checked on 2026-09-30 (both MIT licensed,
+actively maintained):
+- Inspect (UK AISI) caches responses keyed by model, prompt, epoch and generation
+  settings, but for one week by default and without a task version in the key. It has a
+  USD `cost_limit`, applied per sample, and no dry-run estimate.
+- lm-evaluation-harness caches responses in SQLite (`--use_cache`) and has no cost,
+  budget or dry-run option.
+
+**Choice:** A small harness core in Pheasa (`pheasa.bench`) for items, versioned
+prompts, the dry-run estimate, a run-wide budget, the permanent response cache,
+deterministic scoring and bootstrap confidence intervals. Model access goes through thin
+provider adapters. Once the task format settles, add an exporter that turns each task
+into an Inspect task, so others can run it there.
+
+**Alternatives:** Building directly on Inspect, rejected for now because its cache
+expires and does not know task versions, and its cost limit is per sample. Building on
+lm-evaluation-harness, rejected because it has no cost controls and is centered on local
+models. Both remain export targets.
+
+**Decided by:** engineering.
