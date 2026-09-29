@@ -18,6 +18,7 @@ validate:
 	uv run python scripts/validate_manifest.py
 	uv run python scripts/validate_items.py
 	uv run python scripts/validate_golden.py
+	uv run python scripts/render_landscape.py --check
 
 bench:
 	uv run python scripts/bench_throughput.py --check

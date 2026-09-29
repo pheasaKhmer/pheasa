@@ -191,3 +191,13 @@ def test_tokenizer_stats_with_char_tokenizer(tmp_path):
     assert result["sentences_changed_by_normalize"] == 1
     assert result["km_tokens_per_syllable"] == 2.5  # two clusters: the syllable and RO
     assert result["parity"] == 1.0  # "Khmer" is five characters too
+
+
+def test_landscape_license_groups():
+    render = load("render_landscape")
+    assert render.group("MIT") == "Permissive"
+    assert render.group("CC0 (packaging only)") == "Permissive"
+    assert render.group("cc-by-sa-3.0, gfdl") == "Share-alike or copyleft"
+    assert render.group("CC-BY-NC-4.0") == "Non-commercial"
+    assert render.group("other (license_name: seallms)") == "Custom, mixed or by agreement"
+    assert render.group("unknown") == "Unknown (no license found)"
