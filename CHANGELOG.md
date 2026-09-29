@@ -9,3 +9,5 @@ All notable changes to this project are documented here. The format follows
 ### Added
 
 - Project scaffolding: packaging, CI, release workflow, and repository validators.
+- Normalization specification draft (`spec/normalization.md`) based on Unicode Technical Note #61.
+- SIL `khnormal` vendored as a test-only oracle with pinned behavior tests.
