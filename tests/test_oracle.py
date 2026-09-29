@@ -5,21 +5,11 @@ changes any of these, the spec needs review before the oracle is bumped.
 """
 
 import hashlib
-import importlib.util
-from pathlib import Path
 
 import pytest
+from _oracle import ORACLE, load_oracle, load_oracle_sort
 
-ORACLE = Path(__file__).resolve().parent / "oracle" / "khnormal_sil.py"
 ORACLE_SHA256 = "3cf799b41e09bea3603f5c4c5c7c5faf951d744fe0249bc90a0020126ad91e6d"
-
-
-def load_oracle():
-    spec = importlib.util.spec_from_file_location("khnormal_sil", ORACLE)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
 
 oracle = load_oracle()
 
@@ -88,3 +78,44 @@ def test_oracle_leaves_unfixable_text_unchanged_but_flags_it(case, text):
 )
 def test_oracle_leaves_canonical_text_unchanged(text):
     assert oracle.khnormal(text) == text
+
+
+oracle_sort = load_oracle_sort()
+
+
+def test_sort_only_oracle_skips_stage_3_folds():
+    # Rule 3.8 would turn coeng da into coeng ta; the sort-only copy must not.
+    text = cps(0x1780, 0x17D2, 0x178A)
+    assert oracle.khnormal(text) != text
+    assert oracle_sort(text) == text
+    # The full oracle is unaffected by loading the sort-only copy.
+    assert oracle.khnormal(text) == cps(0x1780, 0x17D2, 0x178F)
+
+
+def test_oracle_does_not_start_a_cluster_at_dotted_circle():
+    # U+25CC is in SIL's `B` pattern but its sort category is Other (spec Stage 2).
+    text = cps(0x25CC, 0x17B6, 0x17D2, 0x1781)
+    assert oracle_sort(text) == text
+
+
+@pytest.mark.parametrize(
+    ("text", "once", "twice"),
+    [
+        # A stray ZWJ sorts to the end of its cluster and captures the next base.
+        (
+            cps(0x1780, 0x200D, 0x17B6, 0x1781, 0x17C9),
+            cps(0x1780, 0x17B6, 0x200D, 0x1781, 0x17C9),
+            cps(0x1780, 0x17C9, 0x17B6, 0x200D, 0x1781),
+        ),
+        # A dangling coeng sorts after the robat and captures the next base.
+        (
+            cps(0x1780, 0x17D2, 0x17CC, 0x1781, 0x17CC),
+            cps(0x1780, 0x17CC, 0x17D2, 0x1781, 0x17CC),
+            cps(0x1780, 0x17CC, 0x17CC, 0x17D2, 0x1781),
+        ),
+    ],
+)
+def test_oracle_sort_is_not_idempotent_when_a_cluster_ends_in_a_joiner(text, once, twice):
+    # Spec rule 2.3 exists because of these cases.
+    assert oracle_sort(text) == once
+    assert oracle_sort(once) == twice
