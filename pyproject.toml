@@ -38,6 +38,11 @@ dev = [
     "ruff>=0.16.9",
     "uharfbuzz>=0.56.2",
 ]
+research = [
+    "sentencepiece>=0.2.2",
+    "tiktoken>=0.14.0",
+    "tokenizers>=0.23.2",
+]
 
 [build-system]
 requires = ["hatchling"]

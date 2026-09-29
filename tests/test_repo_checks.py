@@ -162,3 +162,32 @@ def test_sentence_split_and_review_page(tmp_path, monkeypatch):
     content = page.read_text(encoding="utf-8")
     assert 'id="G-0001"' in content
     assert "1780 17D2 178A → 1780 17D2 178F" in content
+
+
+def test_lunar_probe_counts_and_samples(tmp_path, capsys):
+    import gzip
+
+    probe = load("lunar_probe")
+    lunar = "".join(map(chr, (0x17E1, 0x17E5, 0x17D2, 0x17D4)))
+    with gzip.open(tmp_path / "a.txt.gz", "wt", encoding="utf-8") as handle:
+        handle.write(f"x {lunar} y\nno match\n")
+    (tmp_path / "b.jsonl").write_text(json.dumps({"text": f"{lunar}\n{lunar}"}) + "\n")
+    out = tmp_path / "sample.jsonl"
+    assert (
+        probe.main([str(tmp_path / "a.txt.gz"), str(tmp_path / "b.jsonl"), "--out", str(out)]) == 0
+    )
+    assert "matches: 3" in capsys.readouterr().out
+    rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+    assert len(rows) == 3
+    assert rows[0]["before"] == "x " and rows[0]["after"] == " y"
+
+
+def test_tokenizer_stats_with_char_tokenizer(tmp_path):
+    stats = load("tokenizer_stats")
+    misordered = "".join(map(chr, (0x1781, 0x17C2, 0x17D2, 0x1798, 0x179A)))
+    (tmp_path / "p.tsv").write_text(f"{misordered}\tKhmer\n", encoding="utf-8")
+    result = stats.measure(len, stats.read_pairs(tmp_path / "p.tsv"))
+    assert result["km_tokens"] == result["km_tokens_normalized"] == 5
+    assert result["sentences_changed_by_normalize"] == 1
+    assert result["km_tokens_per_syllable"] == 2.5  # two clusters: the syllable and RO
+    assert result["parity"] == 1.0  # "Khmer" is five characters too
