@@ -252,8 +252,15 @@ that may look the same. Some appear to be visibly different, such as `1798 17C9 
 HarfBuzz, so this is not yet evidence about the fonts most used in Cambodia.
 Native-speaker review of these renderings (Q-009, 2026-09-30) found the UTN61-order
 column mostly correct and the TUS-order renderings wrong. This supports the resolution
-above: in these fonts, reordering fixes rendering rather than changing it. The check
-still has to be repeated with Noto Sans Khmer and Khmer OS.
+above: in these fonts, reordering fixes rendering rather than changing it.
+
+Repeated with Noto Sans Khmer (Google Fonts, 2022 build) and Khmer OS / Khmer OS System
+(Debian `fonts-khmeros` 5.0-9): 44%, 68% and 68% of the grid's pairs draw differently.
+The grid is mostly non-words, though, and a shifter on a cluster with a subscript is rare
+in real text (Q-010). On eight plausible clusters, including the loanword spelling
+`1794 17CA 17D2 179B 17BC 1792 17BC 179F`, Noto Sans Khmer differs only on
+`1789 17C9 17D2 1799 17BC`, and Khmer OS on that one and the loanword. Q-009 asks which
+rendering is right for those two.
 
 **C2. ZWNJ position.** The TUS §16.4 grammar allows ZWNJ or ZWJ before a dependent vowel
 (`{Z} V`). UTN61 allows ZWNJ only after a shifter. **Resolution:** preserve and flag,
