@@ -136,10 +136,11 @@ def _option_table(zwsp: str, digits: str, fold_deprecated: bool) -> dict[int, st
     return table
 
 
-def _pre_clean(text: str, table: dict[int, str | None]) -> str:
+def _pre_clean(text: str, table: dict[int, str | None], *, start_of_text: bool = True) -> str:
     # Rule 1.1: a leading byte order mark (or a run of them) is not text.
     # Source: TUS 18.0 §23.8
-    text = text.lstrip(BOM)
+    if start_of_text:
+        text = text.lstrip(BOM)
     # Stage 4 runs here so that its output is normalized like any other text.
     text = text.translate(table)
     # Rule 1.3. Source: UAX #15
@@ -392,5 +393,26 @@ def normalize(
             digits=digits,
             fold_deprecated=fold_deprecated,
         )
+    return _normalize(
+        text,
+        preserve_coeng_da=preserve_coeng_da,
+        zwsp=zwsp,
+        digits=digits,
+        fold_deprecated=fold_deprecated,
+    )
+
+
+def _normalize(
+    text: str,
+    *,
+    preserve_coeng_da: bool = False,
+    zwsp: str = "keep",
+    digits: str = "keep",
+    fold_deprecated: bool = False,
+    start_of_text: bool = True,
+) -> str:
+    """`normalize` without the report. `start_of_text=False` is for text that continues
+    earlier text, such as a later line of a file: rule 1.1 then does not apply."""
     table = _option_table(zwsp, digits, fold_deprecated)
-    return _reorder(_pre_clean(text, table), preserve_coeng_da=preserve_coeng_da)
+    text = _pre_clean(text, table, start_of_text=start_of_text)
+    return _reorder(text, preserve_coeng_da=preserve_coeng_da)

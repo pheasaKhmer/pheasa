@@ -142,12 +142,14 @@ def build_report(
     zwsp: str,
     digits: str,
     fold_deprecated: bool,
+    start_of_text: bool = True,
 ) -> Report:
+    """See `normalize(report=True)`. `start_of_text=False` works as in `_normalize`."""
     _option_table(zwsp, digits, fold_deprecated)  # validates the option values
     pieces = [_Piece(i, i + 1, ch) for i, ch in enumerate(text)]
 
     # Rule 1.1
-    leading = len(text) - len(text.lstrip(BOM))
+    leading = len(text) - len(text.lstrip(BOM)) if start_of_text else 0
     for piece in pieces[:leading]:
         piece.text, piece.rules = "", ["1.1"]
 
@@ -187,7 +189,7 @@ def build_report(
             )
         position += len(piece.text)
 
-    issues = list(validate(output))
+    issues = list(validate(output, start_of_text=start_of_text))
     # Rule 2.3: clusters that are left as typed because normalizing them is unsafe
     for i, j in _clusters(output):
         cluster = output[i:j]
