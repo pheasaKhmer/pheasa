@@ -91,6 +91,47 @@ def _validate_command(args: argparse.Namespace) -> int:
     return 1 if found else 0
 
 
+def _bench_command(args: argparse.Namespace) -> int:
+    from pheasa.bench import runner
+    from pheasa.bench.cache import ResponseCache
+    from pheasa.bench.providers import FakeProvider, get_provider
+
+    task, items = runner.load_task(args.task), runner.load_items(args.items)
+    provider, cache = get_provider(args.model), ResponseCache(args.cache)
+    guess = runner.estimate(task, items, provider, cache)
+    print(
+        f"{task.name} v{task.version} on {provider.name}: {guess.items} items "
+        f"({guess.cached} cached); at most {guess.input_tokens} input and "
+        f"{guess.output_tokens} output tokens; at most ${guess.usd:.4f}"
+    )
+    if args.dry_run:
+        return 0
+    if args.max_usd is None and not isinstance(provider, FakeProvider):
+        print("pheasa: --max-usd is required for a paid model", file=sys.stderr)
+        return 2
+    try:
+        budget = args.max_usd if args.max_usd is not None else float("inf")  # offline only
+        results, spent = runner.run(task, items, provider, cache, budget)
+    except runner.BudgetExceeded as stop:
+        print(f"pheasa: {stop}", file=sys.stderr)
+        results, spent = stop.results, stop.spent
+        status = 1
+    else:
+        status = 0
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as handle:
+            for result in results:
+                handle.write(json.dumps(result, ensure_ascii=False) + "\n")
+    if results:
+        summary = runner.summarize(results)
+        low, high = summary["ci95"]
+        print(
+            f"score {summary['mean']:.3f} (95% CI {low:.3f} to {high:.3f}) "
+            f"over {summary['items']} items; spent ${spent:.4f}"
+        )
+    return status
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pheasa", description="Khmer text normalization (Unicode TN #61)."
@@ -119,6 +160,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     check.add_argument("files", nargs="*", default=["-"], help="input files ('-' = stdin)")
     check.set_defaults(handler=_validate_command)
+
+    bench = commands.add_parser("bench", help="run a benchmark task (see bench/README.md)")
+    bench.add_argument("task", help="task spec (.toml)")
+    bench.add_argument("items", help="items (.jsonl)")
+    bench.add_argument("--model", required=True, help="provider:model, e.g. fake:echo")
+    bench.add_argument("--dry-run", action="store_true", help="print the cost estimate only")
+    bench.add_argument("--max-usd", type=float, help="abort before spending more than this")
+    bench.add_argument("--cache", default="bench/cache", help="response cache directory")
+    bench.add_argument("--out", help="write per-item results as JSON lines")
+    bench.set_defaults(handler=_bench_command)
     return parser
 
 
