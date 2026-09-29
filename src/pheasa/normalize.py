@@ -1,14 +1,18 @@
 """Khmer text normalization.
 
 Implements `spec/normalization.md`. Rule numbers in comments refer to that document.
-Stages implemented so far: 1 (pre-clean), 2 (cluster reordering) and 3 (folds).
+Stages implemented: 1 (pre-clean), 2 (cluster reordering), 3 (folds) and 4 (options).
 """
 
 import re
 import unicodedata
 from enum import IntEnum
+from typing import Literal
 
-__all__ = ["NORMALIZATION_VERSION", "normalize"]
+__all__ = ["NORMALIZATION_VERSION", "DigitsOption", "ZwspOption", "normalize"]
+
+ZwspOption = Literal["keep", "strip", "space"]
+DigitsOption = Literal["keep", "khmer", "ascii"]
 
 # "0" means the spec is only partly implemented and output may still change. It becomes
 # "1" once every stage of spec/normalization.md is in place.
@@ -18,6 +22,7 @@ BOM = "\ufeff"
 COENG = "\u17d2"
 ZWNJ = "\u200c"
 ZWJ = "\u200d"
+ZWSP = "\u200b"
 
 
 class Key(IntEnum):
@@ -95,10 +100,44 @@ def _ccc(ch: str) -> int:
     return unicodedata.combining(ch)
 
 
-def _pre_clean(text: str) -> str:
+# --- Stage 4 tables (applied during pre-clean, before NFC; see spec "Pipeline") --------
+
+_ZWSP_TABLES = {"keep": {}, "strip": {ord(ZWSP): None}, "space": {ord(ZWSP): " "}}
+# Source: UCD 18.0.0 (17E0-17E9 are gc=Nd with decimal values 0-9). 17F0-17F9 are
+# gc=No divination numerals and are never converted.
+_DIGIT_TABLES = {
+    "keep": {},
+    "khmer": {0x30 + d: chr(0x17E0 + d) for d in range(10)},
+    "ascii": {0x17E0 + d: chr(0x30 + d) for d in range(10)},
+}
+# Source: UTN #61 pp. 27, 30 (intentional confusables); TUS 18.0 §16.4 (deprecated and
+# discouraged characters). 17B4 and 17B5 are Default_Ignorable (UTN #61 p. 27).
+_DEPRECATED_TABLE = {
+    0x17A3: "\u17a2",
+    0x17A4: "\u17a2\u17b6",
+    0x17D8: "\u17d4\u179b\u17d4",
+    0x17B4: None,
+    0x17B5: None,
+}
+
+
+def _option_table(zwsp: str, digits: str, fold_deprecated: bool) -> dict[int, str | None]:
+    if zwsp not in _ZWSP_TABLES:
+        raise ValueError(f"zwsp must be one of {sorted(_ZWSP_TABLES)}, not {zwsp!r}")
+    if digits not in _DIGIT_TABLES:
+        raise ValueError(f"digits must be one of {sorted(_DIGIT_TABLES)}, not {digits!r}")
+    table = {**_ZWSP_TABLES[zwsp], **_DIGIT_TABLES[digits]}
+    if fold_deprecated:
+        table.update(_DEPRECATED_TABLE)
+    return table
+
+
+def _pre_clean(text: str, table: dict[int, str | None]) -> str:
     # Rule 1.1: a leading byte order mark (or a run of them) is not text.
     # Source: TUS 18.0 §23.8
     text = text.lstrip(BOM)
+    # Stage 4 runs here so that its output is normalized like any other text.
+    text = text.translate(table)
     # Rule 1.3. Source: UAX #15
     return unicodedata.normalize("NFC", text)
 
@@ -268,9 +307,22 @@ def _reorder(text: str, *, preserve_coeng_da: bool = False) -> str:
     return "".join(out)
 
 
-def normalize(text: str, *, preserve_coeng_da: bool = False) -> str:
+def normalize(
+    text: str,
+    *,
+    preserve_coeng_da: bool = False,
+    zwsp: ZwspOption = "keep",
+    digits: DigitsOption = "keep",
+    fold_deprecated: bool = False,
+) -> str:
     """Return the normalized form of `text` (spec/normalization.md).
 
-    `preserve_coeng_da=True` turns off rule 3.8 (coeng da is stored as coeng ta).
+    Options (all off by default, spec Stage 4):
+
+    - `preserve_coeng_da=True` turns off rule 3.8 (coeng da is stored as coeng ta).
+    - `zwsp`: `"keep"`, `"strip"` or `"space"` for U+200B ZERO WIDTH SPACE.
+    - `digits`: `"keep"`, `"khmer"` (0-9 to U+17E0-17E9) or `"ascii"` (the reverse).
+    - `fold_deprecated=True` replaces deprecated and discouraged Khmer characters.
     """
-    return _reorder(_pre_clean(text), preserve_coeng_da=preserve_coeng_da)
+    table = _option_table(zwsp, digits, fold_deprecated)
+    return _reorder(_pre_clean(text, table), preserve_coeng_da=preserve_coeng_da)
