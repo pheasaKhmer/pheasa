@@ -44,9 +44,19 @@ core and must match the SIL oracle. Stages 1 and 4 are Pheasa's own policy.
 
 | # | Rule | Default | Source |
 |---|---|---|---|
-| 1.1 | Remove a single U+FEFF at the start of the text. | on | TUS §23.8. Since Unicode 3.2, U+FEFF is used only as a byte order mark and not as a zero-width no-break space. |
+| 1.1 | Remove U+FEFF at the start of the text. A run of them (for example from concatenated files) is removed as a whole, so that normalizing twice gives the same result. | on | TUS §23.8. Since Unicode 3.2, U+FEFF is used only as a byte order mark and not as a zero-width no-break space. |
 | 1.2 | U+FEFF elsewhere is preserved and flagged. | on | Same as 1.1. Mid-text use is ambiguous, so it is not silently removed. |
 | 1.3 | Apply NFC. | on | UAX15. For Khmer text NFC is nearly a no-op: no Khmer character decomposes, and only U+17D2 (ccc=9) and U+17DD (ccc=230) have a non-zero combining class (UCD; UTN61 p. 27). NFC runs for the benefit of non-Khmer text in mixed strings. |
+
+NFC uses the interpreter's `unicodedata`. For Khmer text the result is the same on every
+supported Python, because the Khmer combining classes have not changed since they were
+assigned. Non-Khmer characters assigned after the interpreter's Unicode version are
+treated as unassigned by NFC, so mixed text containing them can normalize differently on
+older Pythons.
+
+NFC moves U+17D2 in front of a directly preceding U+17DD. In `1780 17DD 17D2 179A` this
+detaches the subscript: the result is `1780 17D2 17DD 179A`, where 179A starts a new
+cluster. The oracle, run on NFC input as the differential test requires, does the same.
 
 **Invariant:** `NFC(normalize(x)) == normalize(x)`. Pheasa output must survive a
 downstream NFC unchanged. UTN61 pp. 27–28 notes that NFC reorders `<17DD 17D2>` to
@@ -56,10 +66,34 @@ reorder. Property tests must confirm this.
 
 ## Stage 2: reorder syllable clusters
 
-A cluster starts at a base character: a consonant U+1780–17A2 or an independent vowel
-U+17A5–17B3 (UTN61 p. 16), plus U+25CC DOTTED CIRCLE as a placeholder (SIL `B` only). The cluster continues
-through every following character in the categories below. Characters within a cluster
-are stably sorted by category, so typed order is kept inside each category.
+**2.1 Clusters.** A cluster starts at a base character: a consonant U+1780–17A2 or an
+independent vowel U+17A5–17B3 (UTN61 p. 16). A base directly after U+17D2 COENG or
+U+200D ZWJ does not start a cluster: it is part of the subscript or final coeng that
+the joiner opens, and takes the joiner's category. The same holds for a COENG directly
+after a joiner. The cluster continues through every following character whose category
+is 2 to 12 below, and ends before the next base or Other character. U+25CC DOTTED
+CIRCLE is in SIL's `B` pattern, which validation and Stage 3 use, but it is Other here
+and does not start a cluster (it matches the oracle's `charcat`).
+
+**2.2 Sort.** Characters within a cluster are stably sorted by category, so typed order
+is kept inside each category. A subscript (COENG + base) stays together because both
+characters share a category and were adjacent.
+
+**2.3 Stability guard.** A cluster is left exactly as typed, and flagged, if its sorted
+form would change the text around it:
+
+- the sorted form ends in COENG or ZWJ and the next character is a base. This happens
+  only when the cluster holds a dangling COENG or a stray ZWJ. Emitting it would turn
+  the next syllable's base into a subscript, and normalizing again would sort the joined
+  cluster differently;
+- the sorted form ends in a character whose combining class is higher than that of the
+  next character, and the next character's class is not 0. NFC would then reorder the
+  two, breaking the NFC invariant. This needs a non-Khmer combining mark after the
+  cluster, such as `1780 17DD 17B6 0316`.
+
+Either case means the input is malformed, so the conservative choice (see Goal) is to
+leave it unchanged. The oracle sorts these clusters anyway; see Differences from the
+oracle and D-010.
 
 | Order | Category | Code points | Source |
 |---|---|---|---|
@@ -74,6 +108,7 @@ are stably sorted by category, so typed order is kept inside each category.
 | 9 | Vowel, post-base | 17B6 | SIL categories |
 | 10 | Modifier signs | 17C6, 17CB, 17CD–17D1, 17DD (+17D3, see C3) | UTN61 p. 16; SIL |
 | 11 | Final | 17C7, 17C8 | UTN61 p. 16 |
+| 12 | Final coeng: ZWJ, and every COENG or base chained after it | 200D | UTN61 pp. 14–15 (Middle Khmer final coeng, marked with ZWJ); SIL `ZFCoeng` |
 
 The following are **Other**. They end a cluster and are never moved: 17A3, 17A4, 17B4,
 17B5, 17D4–17DC, and everything outside U+1780–17DD except ZWNJ and ZWJ (UTN61 p. 13;
@@ -164,6 +199,18 @@ never remove.
 
 **C3. U+17D3.** UTN61 treats it as Other; SIL's code treats it as a modifier. **Resolution:** follow the oracle and flag it (see Stage 2).
 
+## Differences from the oracle
+
+With default options and Khmer-only input, `normalize(x)` equals `khnormal(NFC(x))`
+except in the cases below. The test suite checks each one.
+
+| # | Case | Oracle | Pheasa | Reason |
+|---|---|---|---|---|
+| O1 | Sorted cluster ends in COENG or ZWJ before a base (rule 2.3) | sorts; its output is not a fixed point, e.g. `1780 17D2 17CC 1781 17CC` → `1780 17CC 17D2 1781 17CC` → `1780 17CC 17CC 17D2 1781` | leaves the cluster as typed | Idempotence (test requirement 2) and "a dangling COENG is flagged, not silently fixed" |
+| O2 | Sorted cluster would end before a non-Khmer mark that NFC swaps with it (rule 2.3) | sorts; output is not NFC | leaves the cluster as typed | NFC invariance (test requirement 3). Needs non-Khmer input, so the Khmer-only differential test never sees it |
+| O3 | Leading U+FEFF (rule 1.1) | keeps it | removes it | Pheasa policy (Stage 1) |
+| O4 | Stage 3 folds | applies them | not yet implemented | Temporary. Until Stage 3 lands, the differential test compares against the oracle with its substitutions disabled (`tests/_oracle.py`), which leaves only the sort |
+
 ## Known defects in the reference material
 
 - **The PDF listing of `khnormal` (UTN61 p. 38) differs from the GitHub version.** It
@@ -181,7 +228,7 @@ output for any input needs a new version, a CHANGELOG entry, and a DECISIONS ent
 
 1. **Differential:** for Khmer-only generated text, `normalize(x)` equals
    `khnormal(NFC(x))` with all options at their defaults. Any difference must be listed
-   in this document.
+   in this document (see Differences from the oracle).
 2. **Idempotence:** `normalize(normalize(x)) == normalize(x)`.
 3. **NFC invariance:** `NFC(normalize(x)) == normalize(x)`.
 4. **No lost bases:** the multiset of base characters is unchanged, except for

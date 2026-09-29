@@ -129,3 +129,25 @@ often each reading occurs.
 **Alternatives:** Converting every occurrence as UTN #61 describes, rejected because the
 sequence is ambiguous in real data and the conversion is not reversible. Removing the
 stray coeng, rejected because it would silently destroy a possible lunar-date encoding.
+
+## D-010 · 2026-09-30 · Leave unstable clusters unsorted
+
+**Context:** D-005 makes the SIL oracle the reference for Stage 2. The spec also requires
+`normalize` to be idempotent and NFC-stable, because downstream users hash its output.
+Property testing showed that the oracle's sort is not idempotent when a cluster holds a
+dangling COENG or a stray ZWJ: the joiner sorts to the end of the cluster and pulls the
+next syllable's base in as a subscript, and a second pass sorts the merged cluster
+differently. A cluster followed by a non-Khmer combining mark can likewise end up in an
+order that NFC changes.
+
+**Choice:** Spec rule 2.3. Pheasa sorts a cluster only if the sorted form keeps the
+cluster boundary and NFC order with the next character. Otherwise it leaves the cluster
+as typed and flags it. The spec lists these as oracle differences O1 and O2. A run of
+leading U+FEFF is removed as a whole (rule 1.1) for the same idempotence reason.
+`NORMALIZATION_VERSION` is `"0"` until every stage of the spec is implemented.
+
+**Alternatives:** Matching the oracle exactly, rejected because output that changes on a
+second pass breaks deduplication. Sorting repeatedly until nothing changes, rejected
+because it would silently turn more of the following text into subscripts.
+
+**Decided by:** engineering, under the conservative-default rule for malformed input.
