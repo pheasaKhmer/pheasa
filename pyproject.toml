@@ -47,7 +47,7 @@ build-backend = "hatchling.build"
 path = "src/pheasa/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/pheasa", "LICENSE", "README.md", "CHANGELOG.md", "CITATION.cff"]
+include = ["/src/pheasa", "/LICENSE", "/README.md", "/CHANGELOG.md", "/CITATION.cff"]
 
 [tool.ruff]
 line-length = 100
