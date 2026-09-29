@@ -1,9 +1,10 @@
 """Khmer text normalization.
 
 Implements `spec/normalization.md`. Rule numbers in comments refer to that document.
-Stages implemented so far: 1 (pre-clean) and 2 (cluster reordering).
+Stages implemented so far: 1 (pre-clean), 2 (cluster reordering) and 3 (folds).
 """
 
+import re
 import unicodedata
 from enum import IntEnum
 
@@ -114,8 +115,135 @@ def _is_stable(ordered: str, following: str) -> bool:
     return not 0 < ccc_next < _ccc(last)
 
 
-def _reorder(text: str) -> str:
-    """Stage 2: stably sort each syllable cluster by sort key."""
+# --- Stage 3 -------------------------------------------------------------------------
+
+# Rule 3.1. Source: SIL khnormal (repeated invisible characters after a coeng)
+_REPEATED_AFTER_COENG = re.compile("(\u200d?\u17d2)[\u17d2\u200c\u200d]+")
+# Rules 3.3 and 3.4. Source: UTN #61 p. 28 ("Do not use" table, split vowels)
+_E_THEN_II = re.compile("\u17c1([\u17bb-\u17bd]?)\u17b8")
+_E_THEN_AA = re.compile("\u17c1([\u17bb-\u17bd]?)\u17b6")
+# Rule 3.7. Source: UTN #61 pp. 16, 29 (coeng ro is second of two coengs)
+_COENG_RO_FIRST = re.compile("(\u17d2\u179a)(\u17d2[\u1780-\u17a2\u17a5-\u17b3])")
+
+# Rule 3.6: the consonant cluster (UTN #61 p. 16: Base Robat? Coengs), then an optional
+# pre-base vowel, then -u. UTN #61 p. 18 (Middle Khmer AboveVowel) allows 17C1-17C5
+# before the above vowel; the Stage 2 sort puts that vowel before the -u.
+_BASE_CLASS = "[\u1780-\u17a2\u17a5-\u17b3]"
+_U_AFTER_CLUSTER = re.compile(
+    f"({_BASE_CLASS}\u17cc?(?:\u17d2{_BASE_CLASS})*)([\u17c1-\u17c5]?)\u17bb"
+)
+# Source: UTN #61 p. 16 (StrongBase, NonBA, StrongContext), p. 23 (S1 = StrongBase)
+_STRONG_BASES = frozenset(
+    chr(cp)
+    for first, last in (
+        (0x1780, 0x1783),
+        (0x1785, 0x1788),
+        (0x178A, 0x178D),
+        (0x178F, 0x1792),
+        (0x1795, 0x1797),
+        (0x179E, 0x17A0),
+        (0x17A2, 0x17A2),
+    )
+    for cp in range(first, last + 1)
+)
+_STRONG_BASE = "[" + "".join(sorted(_STRONG_BASES)) + "]"
+# UTN #61 p. 16 lists only consonants in NonBA, but p. 24 treats independent vowels as
+# weak bases that are not BA, and SIL khnormal's NonBA includes them. Without them the
+# regex would call ka + coeng + independent vowel weak, against the p. 17 prose.
+_NON_BA = "[\u1780-\u1793\u1795-\u17a2\u17a5-\u17b3]"
+BA = "\u1794"
+# UTN #61 p. 16 uses this as a lookbehind, so it may match a suffix of the cluster.
+_STRONG_CONTEXT = re.compile(
+    f"(?:{_STRONG_BASE}\u17cc?(?:\u17d2{_NON_BA}){{0,2}}"
+    f"|{_NON_BA}\u17cc?(?:\u17d2{_STRONG_BASE}(?:\u17d2{_NON_BA})?"
+    f"|\u17d2{_NON_BA}\u17d2{_STRONG_BASE}))\\Z"
+)
+# Source: UTN #61 p. 16 (AboveVowel); 17B6 counts only with a following 17C6
+_ABOVE_VOWELS = frozenset("\u17b7\u17b8\u17b9\u17ba\u17be\u17dd")
+MUUSIKATOAN = "\u17c9"
+TRIISAP = "\u17ca"
+SAMYOK_SANNYA = "\u17d0"
+
+
+def _shifter_for_u(cluster: str, pre: str, after: str) -> str | None:
+    """Rule 3.6: the shifter a -u stands for, or None to leave the -u alone."""
+    above = after[:1] in _ABOVE_VOWELS or after[:2] == "\u17b6\u17c6"
+    consonants = cluster.replace("\u17cc", "").replace(COENG, "")
+    # UTN #61 p. 17 (prose): strong means a series 1 consonant and no BA.
+    strong = BA not in consonants and any(c in _STRONG_BASES for c in consonants)
+    # UTN #61 p. 16 (regex) disagrees with the prose when a strong consonant follows a
+    # BA, or when the cluster has 3 or more coengs. Leave those unchanged (spec O7).
+    if strong != bool(_STRONG_CONTEXT.search(cluster)):
+        return None
+    if strong:
+        # UTN #61 p. 25: samyok sannya does not push triisap down (spec O6).
+        return TRIISAP if above else None
+    # UTN #61 p. 16: AboveVowelSamyok = AboveVowel | [17C1-17C3]? 17D0
+    samyok = after[:1] == SAMYOK_SANNYA and pre in ("", "\u17c1", "\u17c2", "\u17c3")
+    return MUUSIKATOAN if above or samyok else None
+
+
+def _u_to_shifter(text: str) -> str:
+    match = _U_AFTER_CLUSTER.match(text)
+    if match is None:
+        return text
+    cluster, pre = match.groups()
+    shifter = _shifter_for_u(cluster, pre, text[match.end() :])
+    if shifter is None:
+        return text
+    # The shifter goes in its Stage 2 position, before any pre-base vowel.
+    return cluster + shifter + pre + text[match.end() :]
+
+
+def _fold(text: str, *, preserve_coeng_da: bool) -> str:
+    """Stage 3: replace "do not use" sequences in a sorted cluster, in spec order."""
+    text = _REPEATED_AFTER_COENG.sub(r"\1", text)  # 3.1
+    # Source: UTN #61 p. 29 (visually indistinct)
+    text = text.replace("\u17be\u17b6", "\u17c4\u17b8")  # 3.2
+    text = _E_THEN_II.sub("\u17be\\1", text)  # 3.3
+    text = _E_THEN_AA.sub("\u17c4\\1", text)  # 3.4
+    # Source: SIL khnormal; UTN #61 pp. 28, 30 (<17BE 17BB> stands for shifter + 17BE)
+    text = text.replace("\u17be\u17bb", "\u17bb\u17be")  # 3.5
+    text = _u_to_shifter(text)  # 3.6
+    # 3.7, repeated so that a third coeng cannot leave coeng ro in front (spec O4).
+    while (swapped := _COENG_RO_FIRST.sub(r"\2\1", text)) != text:
+        text = swapped
+    if not preserve_coeng_da:
+        # Source: UTN #61 pp. 31-32; D-008
+        text = text.replace(COENG + "\u178a", COENG + "\u178f")  # 3.8
+    return text
+
+
+def _key_at(text: str, j: int, previous: Key) -> Key:
+    """Sort key of text[j] inside a cluster, given the key of text[j - 1]."""
+    key = _KEYS.get(text[j], Key.OTHER)
+    if key in (Key.BASE, Key.COENG) and text[j - 1] in _JOINERS:
+        return previous
+    return key
+
+
+def _sort(cluster: str) -> str:
+    """Rule 2.2: sorted() is stable, so typed order is kept within a key."""
+    keys = [Key.BASE]
+    for j in range(1, len(cluster)):
+        keys.append(_key_at(cluster, j, keys[-1]))
+    return "".join(cluster[k] for k in sorted(range(len(cluster)), key=keys.__getitem__))
+
+
+def _normalize_cluster(cluster: str, *, preserve_coeng_da: bool) -> str:
+    """Stages 2 and 3 on one cluster, repeated until the result no longer changes.
+
+    A fold can leave the cluster unsorted or expose another fold (rule 3.9). Each round
+    either shortens the cluster, removes a -u, 17BE or coeng da, or only permutes it, and
+    a round after a permutation-only round changes nothing, so the loop ends.
+    """
+    while (result := _fold(_sort(cluster), preserve_coeng_da=preserve_coeng_da)) != cluster:
+        cluster = result
+    return cluster
+
+
+def _reorder(text: str, *, preserve_coeng_da: bool = False) -> str:
+    """Stages 2 and 3: normalize each syllable cluster in turn."""
     out: list[str] = []
     n = len(text)
     i = 0
@@ -126,27 +254,23 @@ def _reorder(text: str) -> str:
             out.append(ch)
             i += 1
             continue
-        keys = [Key.BASE]
+        key = Key.BASE
         j = i + 1
-        while j < n:
-            key = _KEYS.get(text[j], Key.OTHER)
-            if key in (Key.BASE, Key.COENG) and text[j - 1] in _JOINERS:
-                key = keys[-1]
-            if key <= Key.BASE:
-                break
-            keys.append(key)
+        while j < n and (key := _key_at(text, j, key)) > Key.BASE:
             j += 1
         cluster = text[i:j]
-        # Rule 2.2: sorted() is stable, so typed order is kept within a key.
-        ordered = "".join(cluster[k] for k in sorted(range(len(cluster)), key=keys.__getitem__))
-        if ordered != cluster and (j == n or _is_stable(ordered, text[j])):
-            out.append(ordered)
-        else:
-            out.append(cluster)
+        result = _normalize_cluster(cluster, preserve_coeng_da=preserve_coeng_da)
+        # Rule 2.3: keep the cluster as typed if the result would disturb its neighbour.
+        if j < n and not _is_stable(result, text[j]):
+            result = cluster
+        out.append(result)
         i = j
     return "".join(out)
 
 
-def normalize(text: str) -> str:
-    """Return the normalized form of `text` (spec/normalization.md)."""
-    return _reorder(_pre_clean(text))
+def normalize(text: str, *, preserve_coeng_da: bool = False) -> str:
+    """Return the normalized form of `text` (spec/normalization.md).
+
+    `preserve_coeng_da=True` turns off rule 3.8 (coeng da is stored as coeng ta).
+    """
+    return _reorder(_pre_clean(text), preserve_coeng_da=preserve_coeng_da)

@@ -1,4 +1,4 @@
-"""Tests for Stages 1 and 2 of spec/normalization.md.
+"""Tests for Stages 1 to 3 of spec/normalization.md.
 
 Test requirement numbers refer to the spec's "Test requirements" section.
 """
@@ -8,20 +8,25 @@ from collections import Counter
 from itertools import pairwise
 
 import pytest
-from _oracle import load_oracle_sort
+from _oracle import load_oracle
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import pheasa
 from pheasa import normalize
 
-oracle_sort = load_oracle_sort()
+oracle = load_oracle().khnormal
 
 BOM = "\ufeff"
 COENG = "\u17d2"
 ZWNJ = "\u200c"
 ZWJ = "\u200d"
 ZWSP = "\u200b"
+BA = "\u1794"
+NYO = "\u1789"
+ROBAT = "\u17cc"
+U = "\u17bb"
+SAMYOK_SANNYA = "\u17d0"
 
 
 def cps(*code_points: int) -> str:
@@ -86,6 +91,19 @@ wellformed_text = st.lists(
     max_size=6,
 ).map("".join)
 
+# Clusters where rule 3.6 may turn -u into a shifter: consonant cluster, optional
+# pre-base vowel, -u, then whatever follows (typed in any order).
+u_cluster = st.builds(
+    lambda base, robat, coengs, rest: base + robat + "".join(coengs) + U + "".join(rest),
+    st.sampled_from(BASES),
+    st.sampled_from(["", ROBAT]),
+    st.lists(TOKENS_BY_KEY["coeng"], max_size=3),
+    st.lists(
+        st.sampled_from([*chars(0x17B6, 0x17C5), "\u17c6", SAMYOK_SANNYA, "\u17dd"]),
+        max_size=2,
+    ),
+)
+
 
 def cluster_bases(text: str) -> list[str]:
     """Bases that start a cluster: a base not joined to the COENG or ZWJ before it."""
@@ -99,6 +117,28 @@ def cluster_bases(text: str) -> list[str]:
 def joined_pairs(text: str) -> int:
     """Count COENG or ZWJ characters directly followed by a base."""
     return sum(1 for a, b in pairwise(text) if a in (COENG, ZWJ) and b in BASE_SET)
+
+
+def u_deviation_possible(text: str) -> bool:
+    """Could rule 3.6 differ from the oracle here (spec O5 to O7)? Deliberately broad."""
+    return U in text and (
+        any(c in text for c in (SAMYOK_SANNYA, NYO, BA))
+        or text.count(COENG) >= 3
+        or text.count(ROBAT) >= 2
+    )
+
+
+def assert_matches_oracle(text: str) -> None:
+    """Test requirement 1: equal to the oracle, or a documented difference applies."""
+    cleaned = nfc(text)
+    ours, theirs = normalize(text), oracle(cleaned)
+    if ours == theirs:
+        return
+    assert (
+        joined_pairs(theirs) > joined_pairs(cleaned)  # O1: rule 2.3
+        or oracle(theirs) != theirs  # O4: the oracle's own output is not stable
+        or u_deviation_possible(cleaned)  # O5 to O7: rule 3.6
+    ), (ours, theirs)
 
 
 # --- Examples -------------------------------------------------------------------------
@@ -147,6 +187,36 @@ def joined_pairs(text: str) -> int:
         ("2.1", cps(0x0041, 0x17B6, 0x17D2, 0x1780), cps(0x0041, 0x17B6, 0x17D2, 0x1780)),
         # Deprecated characters are Other: untouched
         ("2.1", cps(0x17A3, 0x17B6), cps(0x17A3, 0x17B6)),
+        ("3.1", cps(0x1780, 0x17D2, 0x17D2, 0x1798), cps(0x1780, 0x17D2, 0x1798)),
+        ("3.1", cps(0x1780, 0x17D2, 0x200C, 0x200D, 0x1798), cps(0x1780, 0x17D2, 0x1798)),
+        ("3.2", cps(0x1780, 0x17BE, 0x17B6), cps(0x1780, 0x17C4, 0x17B8)),
+        ("3.3", cps(0x1780, 0x17C1, 0x17B8), cps(0x1780, 0x17BE)),
+        ("3.3", cps(0x1780, 0x17C1, 0x17BC, 0x17B8), cps(0x1780, 0x17BE, 0x17BC)),
+        ("3.4", cps(0x1780, 0x17C1, 0x17B6), cps(0x1780, 0x17C4)),
+        # 3.5 then 3.6: <17BE 17BB> after a strong cluster is triisap + 17BE
+        ("3.5", cps(0x179F, 0x17BE, 0x17BB), cps(0x179F, 0x17CA, 0x17BE)),
+        ("3.6", cps(0x179F, 0x17BB, 0x17B8), cps(0x179F, 0x17CA, 0x17B8)),
+        ("3.6", cps(0x1798, 0x17BB, 0x17B8), cps(0x1798, 0x17C9, 0x17B8)),
+        ("3.6", cps(0x1798, 0x17BB, 0x17D0), cps(0x1798, 0x17C9, 0x17D0)),
+        ("3.6", cps(0x1798, 0x17BB, 0x17B6, 0x17C6), cps(0x1798, 0x17C9, 0x17B6, 0x17C6)),
+        # BA makes a cluster weak even with a strong consonant before it (UTN #61 p. 22)
+        (
+            "3.6",
+            cps(0x179F, 0x17D2, 0x1794, 0x17BB, 0x17B7),
+            cps(0x179F, 0x17D2, 0x1794, 0x17C9, 0x17B7),
+        ),
+        # -u before a vowel that is not above-base stays -u
+        ("3.6", cps(0x179F, 0x17BB, 0x17B6), cps(0x179F, 0x17BB, 0x17B6)),
+        (
+            "3.7",
+            cps(0x179F, 0x17D2, 0x179A, 0x17D2, 0x1780),
+            cps(0x179F, 0x17D2, 0x1780, 0x17D2, 0x179A),
+        ),
+        ("3.8", cps(0x1780, 0x17D2, 0x178A), cps(0x1780, 0x17D2, 0x178F)),
+        # A base DA is not a coeng: only coeng da folds
+        ("3.8", cps(0x178A, 0x17B6), cps(0x178A, 0x17B6)),
+        # Rule 3.9: the -u left over after 3.6 is sorted and 3.5 applied again
+        ("3.9", cps(0x1798, 0x17BB, 0x17BE, 0x17BB), cps(0x1798, 0x17C9, 0x17BB, 0x17BE)),
     ],
 )
 def test_example(rule, source, expected):
@@ -166,8 +236,68 @@ def test_example(rule, source, expected):
 )
 def test_unstable_cluster_is_left_as_typed(text):
     # Rule 2.3. The oracle differs here; see the spec's "Differences from the oracle".
-    assert oracle_sort(nfc(text)) != text
+    assert oracle(nfc(text)) != text
     assert normalize(text) == text
+
+
+@pytest.mark.parametrize(
+    ("row", "source", "ours", "theirs"),
+    [
+        # O4: the shifter goes before the pre-base vowel; the oracle leaves it after,
+        # and a second oracle pass moves it.
+        (
+            "O4",
+            cps(0x179F, 0x17C1, 0x17BB, 0x17B7),
+            cps(0x179F, 0x17CA, 0x17C1, 0x17B7),
+            cps(0x179F, 0x17C1, 0x17CA, 0x17B7),
+        ),
+        # O4: with three coengs, coeng ro ends up last.
+        (
+            "O4",
+            cps(0x1780, 0x17D2, 0x179A, 0x17D2, 0x1781, 0x17D2, 0x1782),
+            cps(0x1780, 0x17D2, 0x1781, 0x17D2, 0x1782, 0x17D2, 0x179A),
+            cps(0x1780, 0x17D2, 0x1781, 0x17D2, 0x179A, 0x17D2, 0x1782),
+        ),
+        # O5: NYO is weak (UTN #61 pp. 18, 23); the oracle's class has 1780 instead.
+        (
+            "O5",
+            cps(0x1789, 0x17BB, 0x17B7),
+            cps(0x1789, 0x17C9, 0x17B7),
+            cps(0x1789, 0x17BB, 0x17B7),
+        ),
+        # O6: samyok sannya does not push triisap down (UTN #61 p. 25).
+        (
+            "O6",
+            cps(0x179F, 0x17BB, 0x17D0),
+            cps(0x179F, 0x17BB, 0x17D0),
+            cps(0x179F, 0x17CA, 0x17D0),
+        ),
+        # O7: UTN #61's prose says BA makes the cluster weak; its regex says strong.
+        (
+            "O7",
+            cps(0x1794, 0x17D2, 0x1780, 0x17BB, 0x17B7),
+            cps(0x1794, 0x17D2, 0x1780, 0x17BB, 0x17B7),
+            cps(0x1794, 0x17D2, 0x1780, 0x17CA, 0x17B7),
+        ),
+        # O7: a second robat is outside the cluster grammar; the oracle still matches
+        # the coeng alone.
+        (
+            "O7",
+            cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17BB, 0x17B9),
+            cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17BB, 0x17B9),
+            cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17C9, 0x17B9),
+        ),
+    ],
+)
+def test_documented_oracle_difference(row, source, ours, theirs):
+    assert oracle(source) == theirs
+    assert normalize(source) == ours
+
+
+def test_preserve_coeng_da():
+    text = cps(0x1780, 0x17D2, 0x178A, 0x17B6)
+    assert normalize(text) == cps(0x1780, 0x17D2, 0x178F, 0x17B6)
+    assert normalize(text, preserve_coeng_da=True) == text
 
 
 def test_public_api():
@@ -180,25 +310,33 @@ def test_public_api():
 
 @settings(max_examples=1000)
 @given(wellformed_text)
-def test_matches_oracle_sort_on_wellformed_clusters(text):
-    # Requirement 1 for Stage 2: no exceptions when every joiner is followed by its unit.
-    assert normalize(text) == oracle_sort(nfc(text))
+def test_matches_oracle_on_wellformed_clusters(text):
+    assert_matches_oracle(text)
 
 
 @settings(max_examples=2000)
 @given(khmer_text)
-def test_matches_oracle_sort_on_any_khmer_text(text):
-    # Requirement 1 for Stage 2. The only allowed difference is rule 2.3 (a joiner at
-    # the end of a sorted cluster), which shows up as a new joiner + base pair in the
-    # oracle's output.
-    cleaned = nfc(text)
-    expected = oracle_sort(cleaned)
-    if normalize(text) != expected:
-        assert joined_pairs(expected) > joined_pairs(cleaned)
+def test_matches_oracle_on_any_khmer_text(text):
+    assert_matches_oracle(text)
+
+
+@settings(max_examples=2000)
+@given(st.lists(u_cluster, min_size=1, max_size=3).map(" ".join))
+def test_matches_oracle_on_u_clusters(text):
+    # Rule 3.6 is the only fold with context, so it gets its own generator.
+    assert_matches_oracle(text)
 
 
 @settings(max_examples=1000)
-@given(mixed_text)
+@given(st.lists(u_cluster, min_size=1, max_size=3).map(" ".join))
+def test_u_clusters_without_documented_differences_match_exactly(text):
+    if not u_deviation_possible(text):
+        ours, theirs = normalize(text), oracle(text)
+        assert ours == theirs or oracle(theirs) != theirs
+
+
+@settings(max_examples=1000)
+@given(st.one_of(mixed_text, wellformed_text, u_cluster))
 def test_idempotent(text):
     # Requirement 2
     once = normalize(text)
@@ -206,7 +344,7 @@ def test_idempotent(text):
 
 
 @settings(max_examples=1000)
-@given(mixed_text)
+@given(st.one_of(mixed_text, wellformed_text, u_cluster))
 def test_nfc_invariant(text):
     # Requirement 3
     once = normalize(text)
@@ -216,12 +354,12 @@ def test_nfc_invariant(text):
 @settings(max_examples=1000)
 @given(khmer_text)
 def test_no_lost_bases(text):
-    # Requirement 4. After Stage 1 (NFC; this alphabet has no BOM), Stage 2 only
-    # reorders: every character survives and cluster-starting bases keep their order.
+    # Requirement 4. After Stage 1 (NFC; this alphabet has no BOM), cluster-starting
+    # bases keep their order, and no fold other than 3.8 (coeng da) touches a base.
     cleaned = nfc(text)
-    once = normalize(text)
-    assert Counter(once) == Counter(cleaned)
-    assert cluster_bases(once) == cluster_bases(cleaned)
+    assert cluster_bases(normalize(text)) == cluster_bases(cleaned)
+    kept = normalize(text, preserve_coeng_da=True)
+    assert Counter(c for c in kept if c in BASE_SET) == Counter(c for c in cleaned if c in BASE_SET)
 
 
 @given(
@@ -232,8 +370,8 @@ def test_no_lost_bases(text):
     st.randoms(use_true_random=False),
 )
 def test_typing_order_of_distinct_keys_does_not_matter(base, tokens, rnd):
-    # Requirement 5, restricted to Stage 2: tokens with different sort keys can be typed
-    # in any order. (Whether two orders render alike is a separate, human question.)
+    # Requirement 5, for Stages 2 and 3: tokens with different sort keys can be typed in
+    # any order. (Whether two orders render alike is a separate, human question.)
     shuffled = list(tokens)
     rnd.shuffle(shuffled)
     assert normalize(base + "".join(shuffled)) == normalize(base + "".join(tokens))
