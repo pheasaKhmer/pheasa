@@ -67,3 +67,33 @@ report of every change made, a streaming CLI, throughput benchmarks, and a
 rejected because it ties Pheasa's release cycle to another project (contributions
 upstream are still welcome). A Pheasa-specific canonical form, rejected because it
 would fragment Khmer text further.
+
+## D-006 · 2026-09-30 · Pin Unicode 18.0.0
+
+**Context:** Khmer character categories and properties must come from a fixed Unicode
+version. Python's `unicodedata` version depends on the interpreter: the macOS system
+Python ships Unicode 13.0.
+
+**Choice:** Pheasa targets Unicode 18.0.0. Khmer character tables are written out
+explicitly in the source, with citations, and are not read from `unicodedata` at
+runtime. The Khmer entries in `UnicodeData.txt` (U+1780–17FF, U+19E0–19FF) are identical
+in 15.1.0, 17.0.0, and 18.0.0, so the pin is low-risk.
+
+**Alternatives:** Relying on the running interpreter's `unicodedata`, rejected because
+it would make output depend on the Python version.
+
+## D-007 · 2026-09-30 · SIL `khnormal` as a test oracle
+
+**Context:** D-005 requires Pheasa to match the UTN #61 reference implementation. That
+implementation (`khnormal`) is MIT-licensed, but the repository it lives in
+(`sillsdev/khmer-character-specification`) is otherwise CC BY-NC-SA 4.0.
+
+**Choice:** Vendor an unmodified copy of `khnormal` into `tests/oracle/`, with its MIT
+license, the upstream commit, and a SHA-256 hash checked by a test. It is used only in
+tests and is not shipped in the package. Pheasa's own implementation is written from the
+UTN #61 grammar and does not copy the oracle's code. No NonCommercial-licensed material
+(specification text, word lists) is included in this repository.
+
+**Alternatives:** Downloading the oracle at test time, rejected because it makes tests
+depend on the network and on upstream staying unchanged. Using the JavaScript
+`khmer-normalizer`, rejected because it would add a Node toolchain to the test suite.
