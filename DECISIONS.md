@@ -49,3 +49,21 @@ storing a long-lived secret.
 
 **Alternatives:** A personal namespace, rejected because project assets should live
 under the project name.
+
+## D-005 · 2026-09-30 · Normalizer follows UTN #61
+
+**Context:** A Khmer encoding structure is already described in Unicode Technical Note
+#61 and implemented by SIL International (`khnormal`, `sillsdev/khmer-normalizer`). If
+Pheasa defined a second canonical form, Khmer text would have two competing standards.
+
+**Choice:** `pheasa.normalize` implements the UTN #61 ordering exactly and is tested
+against SIL's implementation. Any difference in output is treated as a bug unless the
+specification explains it. Pheasa adds features around that ordering: an
+invisible-character policy with ZWSP preserved by default, optional digit conversion, a
+report of every change made, a streaming CLI, throughput benchmarks, and a
+`NORMALIZATION_VERSION` stability guarantee.
+
+**Alternatives:** Contributing these features upstream and depending on SIL's package,
+rejected because it ties Pheasa's release cycle to another project (contributions
+upstream are still welcome). A Pheasa-specific canonical form, rejected because it
+would fragment Khmer text further.
