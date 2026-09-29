@@ -36,6 +36,7 @@ dev = [
     "pytest>=9.1.1",
     "regex>=2026.9.29",
     "ruff>=0.16.9",
+    "uharfbuzz>=0.56.2",
 ]
 
 [build-system]
