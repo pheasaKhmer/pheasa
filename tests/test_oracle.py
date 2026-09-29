@@ -70,7 +70,7 @@ def test_oracle_applies_rule(rule, source, expected):
         ("dangling coeng", cps(0x1780, 0x17D2)),
         ("stray ZWNJ", cps(0x1780, 0x200C, 0x17B6)),
         ("repeated vowel", cps(0x1780, 0x17B6, 0x17B6)),
-        ("legacy lunar date (not converted, see Q-006)", cps(0x17E1, 0x17E0, 0x17D2, 0x17D4)),
+        ("legacy lunar date (not converted, see D-009)", cps(0x17E1, 0x17E0, 0x17D2, 0x17D4)),
     ],
 )
 def test_oracle_leaves_unfixable_text_unchanged_but_flags_it(case, text):

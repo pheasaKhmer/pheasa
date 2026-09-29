@@ -98,7 +98,7 @@ with another that renders identically (UTN61 pp. 28–29, "Do not use" table).
 | 3.5 | `17BE 17BB` | `17BB 17BE` | SIL (sets up 3.6) |
 | 3.6 | -u (17BB) before an above vowel or 17D0, where a shifter was meant | 17CA after a STRONG cluster, 17C9 after a WEAK one | UTN61 pp. 24–25, 28–29 |
 | 3.7 | `17D2 179A 17D2 X` (coeng ro first) | `17D2 X 17D2 179A` | UTN61 pp. 16, 29, 35 |
-| 3.8 | `17D2 178A` (coeng da) | `17D2 178F` (coeng ta) | UTN61 pp. 31–32. See Q-005. |
+| 3.8 | `17D2 178A` (coeng da) | `17D2 178F` (coeng ta) | UTN61 pp. 31–32; default confirmed by native-speaker review (D-008). Option `preserve_coeng_da=True` disables it. |
 
 STRONG and WEAK are the cluster classes defined in UTN61 pp. 16 and 24. Implement them
 from the UTN61 grammar and check them against the SIL oracle.
@@ -107,7 +107,7 @@ from the UTN61 grammar and check them against the SIL oracle.
 sequences should become U+19E0–19FF symbols. SIL's `khnormal` contains that
 substitution, but it never runs: digits are Other, so they are never inside a cluster.
 Pheasa version 1 matches the oracle's actual behavior (no conversion) and flags these
-sequences. See Q-006.
+sequences. See D-009.
 
 ## Stage 4: options (Pheasa policy)
 
@@ -134,7 +134,7 @@ Issues come from a port of SIL's `khtest` (the UTN61 syllable grammar, p. 16) an
 - ZWNJ or ZWJ outside a permitted position;
 - repeated vowels or modifiers, such as `1780 17B6 17B6`;
 - a mid-text U+FEFF;
-- legacy lunar-date sequences (see Q-006);
+- legacy lunar-date sequences (see D-009);
 - `17C4 17B8` produced by rule 3.2. This is valid under UTN61's Middle Khmer grammar but
   not its Modern Khmer grammar, so it is flagged for review.
 
