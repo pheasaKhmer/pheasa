@@ -49,3 +49,11 @@ Planned as 0.1.0, the first release. Fixes `NORMALIZATION_VERSION = "1"` (D-013)
 - Landscape of Khmer language technology (`reports/landscape.md`, draft): 98 datasets,
   tools, models and benchmarks with licenses checked at the source, and a gap analysis.
   Tables are rendered from `reports/landscape.jsonl` by `scripts/render_landscape.py`.
+- Tokenizer cost report (`reports/tokenizers.md`, draft): on NTREX-128, Khmer costs 3.2
+  to 8.5 times as many tokens as English in LLM tokenizers and 1.3 to 1.7 times in
+  multilingual encoder and translation tokenizers; normalization never increased counts.
+- Corpus probe report (`reports/corpus-probes.md`, draft): 61% of FineWeb-2 Khmer web
+  documents contain text that `normalize` changes; no legacy lunar-date sequences in
+  about 169 million characters (D-009 update).
+- `scripts/fetch_sources.py`, which downloads the approved sources with provenance
+  manifests under `data/`.
