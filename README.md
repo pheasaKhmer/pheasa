@@ -1,6 +1,7 @@
 # Pheasa (ភាសា)
 
-**Open reference infrastructure for Khmer language AI.**
+**Open reference infrastructure for Khmer language AI.** *Pheasa* is the romanization
+of ភាសា, the Khmer word for "language".
 
 [![CI](https://github.com/pheasaKhmer/pheasa/actions/workflows/ci.yml/badge.svg)](https://github.com/pheasaKhmer/pheasa/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -67,4 +68,4 @@ unless their sources require stricter terms.
 
 ---
 
-Created and maintained by **Samputhy Khim** ([@organi-cs](https://github.com/organi-cs)).
+Created and maintained by **Samputhy Khim** ([@organi-cs](https://github.com/organi-cs), [ORCID 0009-0008-4510-8839](https://orcid.org/0009-0008-4510-8839)).
