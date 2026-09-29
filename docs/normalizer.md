@@ -58,9 +58,9 @@ On the command line: `--zwsp`, `--digits`, `--fold-deprecated`, `--preserve-coen
 - **No lost consonants.** Syllables are never merged, split or reordered, and base
   consonants are never removed. Folds replace marks with visually identical
   equivalents (and coeng da with coeng ta); only the options remove characters.
-- **Versioned.** `pheasa.NORMALIZATION_VERSION` names the rule set. Any change to output
-  gets a new version, so stored hashes of normalized text stay comparable within a
-  version. While the version is `"0"`, the rules may still change.
+- **Versioned.** `pheasa.NORMALIZATION_VERSION` (currently `"1"`) names the rule set.
+  Any change to output for any input gets a new version, so hashes of normalized text
+  stay comparable within a version. Store the version next to anything you hash.
 
 ## The report
 
@@ -105,5 +105,3 @@ malformed input, where Pheasa leaves the text alone and SIL's script does not.
 - Modern Khmer only. Middle Khmer final coengs (ZWJ + coeng) are kept at the end of the
   syllable and flagged (V3), not checked further.
 - Spelling is never corrected. Two spellings that look different stay different.
-- One case is still open: which shifter a -u stands for after BA with a series-1
-  subscript. Pheasa leaves that -u unchanged for now.

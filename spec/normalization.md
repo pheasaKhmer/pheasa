@@ -1,6 +1,6 @@
 # Pheasa Khmer normalization specification
 
-**Status:** draft for `NORMALIZATION_VERSION = "1"` (targets pheasa v0.1)
+**Status:** `NORMALIZATION_VERSION = "1"` (pheasa 0.1.0), fixed 2026-09-30 (D-013)
 **Unicode version:** 18.0.0 (see D-006)
 **Scope:** Modern Khmer (`km`). Middle Khmer (`xhm`) is out of scope for version 1.
 
@@ -152,10 +152,9 @@ between, such as a shifter, ZWNJ or a second robat, means the rule does not appl
   StrongBase consonant `1780–1783 1785–1788 178A–178D 178F–1792 1795–1797 179E–17A0 17A2`
   (UTN61 pp. 16, 23) and no BA (1794). Otherwise it is **WEAK**. Independent vowels are
   weak (UTN61 p. 24).
-- UTN61 p. 16 also gives STRONG as the regex `StrongContext`, used as a lookbehind, so
-  it can match a suffix of the cluster. Pheasa evaluates that regex too, with NonBA
-  widened to include independent vowels (UTN61 p. 24; SIL). If the prose and the regex
-  disagree, the -u is left alone and flagged (conflict C4).
+- UTN61 p. 16 also gives STRONG as the regex `StrongContext`. It is used as a
+  lookbehind, so it can match a suffix of the cluster and disagree with the prose.
+  Pheasa follows the prose (conflict C4, Q-008, D-012).
 - STRONG: -u becomes 17CA if the next character is an AboveVowel `17B7–17BA 17BE 17DD`
   or `17B6 17C6` (UTN61 p. 16). Not before 17D0, because samyok sannya does not push
   triisap down (UTN61 p. 25).
@@ -207,7 +206,7 @@ Issues use these codes, with offsets into the validated text:
 | V1 | Dangling coeng: 17D2 not followed by a base | UTN61 p. 16 (Coengs) |
 | V2 | ZWNJ other than directly after a shifter that would otherwise downshift | UTN61 p. 16 (Shifter); C2 |
 | V3 | ZWJ next to Khmer text. `ZWJ 17D2 base` is reported as a final coeng, which UTN61 allows only in Middle Khmer | UTN61 pp. 14–16 |
-| V4 | A mark that does not fit the syllable: a second vowel (including `17C4 17B8` from rule 3.2), a third modifier, 17D0 or 17DD after -u, a third coeng, a misplaced shifter or robat. A -u before an above vowel that rule 3.6 left alone (O6, O7) is reported here | UTN61 p. 16 |
+| V4 | A mark that does not fit the syllable: a second vowel (including `17C4 17B8` from rule 3.2), a third modifier, 17D0 or 17DD after -u, a third coeng, a misplaced shifter or robat. A -u before an above vowel that rule 3.6 left alone (O6, O8) is reported here | UTN61 p. 16 |
 | V5 | A mark with no base before it | UTN61 p. 16 |
 | V6 | Legacy lunar-date sequence: digit + 17D2 + 17D4, or 17D4 + 17D2 + digit or 17D4 | UTN61 p. 35; D-009 |
 | V7 | U+17D3 (discouraged) | UTN61 p. 27; C3 |
@@ -281,8 +280,9 @@ is weak, whatever else it contains. The `StrongContext` regex on p. 16 is used a
 lookbehind, so it matches any suffix of the cluster: in `1794 17D2 1780` the suffix
 `1780` is strong, and the regex says STRONG. With three or more coengs, the regex can
 also miss a strong consonant that the prose counts. The oracle follows the regex.
-**Resolution:** where the two disagree, leave the -u unchanged and flag it (O7). Q-008
-asks which reading is right.
+**Resolution:** follow the prose. A cluster that contains BA is WEAK, and one with a
+strong consonant anywhere and no BA is STRONG, however many coengs it has. Decided by
+native-speaker review (Q-008, 2026-09-30; D-012). This differs from the oracle (O7).
 
 ## Differences from the oracle
 
@@ -297,11 +297,12 @@ except in the cases below. The test suite checks each one.
 | O4 | A fold leaves the cluster unsorted or exposes another fold (rule 3.9), e.g. `179F 17C1 17BB 17B7` or three coengs with coeng ro first | one pass; its output is not a fixed point (`179F 17C1 17CA 17B7`) | repeats until stable (`179F 17CA 17C1 17B7`) | Idempotence |
 | O5 | -u after a cluster whose consonants are NYO (1789) and other weak letters (rule 3.6) | leaves the -u: its S2 class has 1780 where UTN61 p. 23 has 1789 | 17C9 | UTN61 pp. 18, 23 list 1789 as weak. The oracle copies a typo from UTN61 p. 24 |
 | O6 | -u before 17D0 after a STRONG cluster, or after a WEAK cluster with pre-base vowel 17C4 or 17C5 (rule 3.6) | 17CA, or 17C9 | leaves the -u | UTN61 p. 25 (samyok sannya does not push triisap down) and p. 16 (AboveVowelSamyok allows only 17C1–17C3). Converting would change the rendering |
-| O7 | -u where UTN61's prose and regex disagree (BA followed by a strong consonant, or 3+ coengs), or where the consonant cluster is outside `Base Robat? Coengs` (e.g. two robats) (rule 3.6) | follows the regex, matched against any suffix of the cluster | leaves the -u and flags it | Conflict C4. Sources disagree, so the conservative choice applies |
+| O7 | -u where UTN61's prose and regex disagree: BA followed by a strong consonant, or 3+ coengs (rule 3.6) | follows the regex, matched against any suffix of the cluster (17CA after `1794 17D2 1780`) | follows the prose (17C9 after `1794 17D2 1780`) | Conflict C4, resolved by native-speaker review (Q-008, D-012) |
+| O8 | -u after a consonant cluster outside `Base Robat? Coengs`, e.g. two robats (rule 3.6) | matches the regex against the part after the second robat | leaves the -u and flags it (V4) | The cluster is malformed, so the conservative choice applies |
 
 The differential test (`tests/test_normalize.py`) accepts a difference only when one of
 these rows can apply: O1 shows up as a new joiner + base pair in the oracle's output, O4
-as oracle output that the oracle itself changes, and O5–O7 need a -u together with
+as oracle output that the oracle itself changes, and O5–O8 need a -u together with
 17D0, NYO, BA, three coengs or two robats. O2 and O3 need input outside the Khmer-only
 alphabet the test uses.
 
@@ -316,8 +317,8 @@ alphabet the test uses.
   have `1789` (NYO) instead, and 1780 is already a strong consonant. The oracle copies
   the p. 24 version, so -u after NYO is never converted (O5).
 - **UTN61 p. 16 NonBA lists only consonants.** p. 24 treats independent vowels as weak
-  bases that are not BA, and SIL's NonBA includes them. Pheasa includes them in the C4
-  regex check.
+  bases that are not BA, and SIL's NonBA includes them. Pheasa's prose-based STRONG
+  test treats them as neither strong nor BA.
 
 ## Output stability
 

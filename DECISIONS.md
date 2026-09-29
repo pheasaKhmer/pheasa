@@ -175,4 +175,40 @@ rendering in the samyok case, and is not idempotent. Following the prose in the 
 without asking, rejected because the sources conflict, so the conservative default
 applies until a native speaker decides.
 
-**Decided by:** engineering, from the UTN #61 text; the BA case is pending Q-008.
+**Decided by:** engineering, from the UTN #61 text. The BA case was later settled by D-012.
+
+## D-012 · 2026-09-30 · STRONG follows UTN #61's prose
+
+**Context:** Rule 3.6 needs to know whether a consonant cluster is STRONG (takes
+triisap) or WEAK (takes muusikatoan). UTN #61's prose (pp. 17, 22) says a cluster with
+BA is weak, and one with a series 1 consonant and no BA is strong. Its regex (p. 16) is
+a lookbehind that matches any suffix of the cluster, so it calls `BA + coeng KA` strong
+and can miss a strong base behind three coengs. SIL's reference follows the regex. D-011
+left these cases unchanged until a native speaker decided (Q-008).
+
+**Choice:** Follow the prose everywhere: in rule 3.6 and in the validator's check of
+where ZWNJ may follow a shifter. Recorded as oracle difference O7.
+
+**Alternatives:** Following the regex and SIL (triisap after BA + series 1 coeng),
+rejected because the prose states the BA rule explicitly (p. 22, rule 3). Leaving the -u
+unchanged, rejected once the native-speaker answer was available.
+
+**Decided by:** the human (Q-008 answer A), 2026-09-30.
+
+## D-013 · 2026-09-30 · Normalization version 1
+
+**Context:** Downstream users hash normalized text, so the output has to be stable and
+identified. All four stages and the validation step of `spec/normalization.md` are
+implemented, every source conflict has a recorded resolution (C1 by Q-009, C4 by Q-008),
+and 70 golden fixtures from Khmer Wikipedia have been verified by a native speaker.
+
+**Choice:** `NORMALIZATION_VERSION = "1"` from pheasa 0.1.0. From here, any change to the
+output for any input (not only the golden fixtures) needs version "2", a CHANGELOG entry
+and a DECISIONS entry. Validation messages and report fields may change without a new
+normalization version, because they do not change the text.
+
+**Alternatives:** Waiting for fixtures from messier sources (social media, OCR), rejected
+because version numbers exist so that later changes can be made safely; the next rule
+change will simply be version "2".
+
+**Decided by:** engineering, after the human answered Q-008 and verified the fixtures.

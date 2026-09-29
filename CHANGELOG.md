@@ -6,19 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+Planned as 0.1.0, the first release. Fixes `NORMALIZATION_VERSION = "1"` (D-013).
+
 ### Added
 
 - Project scaffolding: packaging, CI, release workflow, and repository validators.
 - Normalization specification draft (`spec/normalization.md`) based on Unicode Technical Note #61.
 - SIL `khnormal` vendored as a test-only oracle with pinned behavior tests.
 - `pheasa.normalize` with Stage 1 (leading BOM removal, NFC) and Stage 2 (syllable
-  cluster reordering per Unicode Technical Note #61). `NORMALIZATION_VERSION` is `"0"`
-  while the specification is only partly implemented.
+  cluster reordering per Unicode Technical Note #61).
 - Property tests: differential against the oracle's sort, idempotence, NFC invariance,
   no lost base characters, and typing-order independence.
 - Stage 3 folds (rules 3.1–3.9) with a `preserve_coeng_da` option. Rule 3.6 follows the
-  text of Unicode Technical Note #61 where the SIL reference differs; the differences
-  are listed in the specification (O4–O7, conflict C4).
+  text of Unicode Technical Note #61 where the SIL reference differs: a cluster with BA
+  is weak (D-012). The differences are listed in the specification (O4–O8, conflict C4).
 - Stage 4 options, all off by default: `zwsp` (`"keep"`, `"strip"`, `"space"`), `digits`
   (`"keep"`, `"khmer"`, `"ascii"`) and `fold_deprecated`.
 - `pheasa.validate`, a checker for the Modern Khmer syllable structure of Unicode
@@ -42,13 +43,3 @@ All notable changes to this project are documented here. The format follows
 - `scripts/encoding_variants.py`, which counts syllables that occur in more than one
   encoding in a sample.
 - User guide for the normalizer (`docs/normalizer.md`).
-
-### Fixed
-
-- The source distribution no longer includes test-only license and README files.
-- README links work on the PyPI project page.
-
-### Changed
-
-- `normalize` reuses the result for a repeated syllable cluster within one call, roughly
-  doubling throughput. Output is unchanged.
