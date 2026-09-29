@@ -1,0 +1,9 @@
+# Draft task spec (version 0.x = not approved yet). See translation-km-en.md.
+name = "translation-km-en"
+version = "0.1"
+description = "Translate a Khmer sentence into English."
+scorer = "chrf"
+max_tokens = 256
+prompt = """Translate the following Khmer sentence into English. Reply with the translation only.
+
+{source}"""

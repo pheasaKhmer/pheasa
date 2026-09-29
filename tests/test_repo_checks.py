@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import string
 from pathlib import Path
 
 import pytest
@@ -225,3 +226,23 @@ def test_encoding_variants_counts(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "syllables seen in 2+ encodings: 1; their tokens: 3" in out
     assert "tokens not in canonical form: 1 (33.33%)" in out
+
+
+def test_task_lock_requires_version_bump():
+    lock_tasks = load("lock_tasks")
+    locked = {"t": {"version": "1", "prompt_sha256": "old"}}
+    assert lock_tasks.problems(locked, {"t": {"version": "1", "prompt_sha256": "new"}})
+    assert not lock_tasks.problems(locked, {"t": {"version": "2", "prompt_sha256": "new"}})
+    assert not lock_tasks.problems(locked, {"u": {"version": "1", "prompt_sha256": "x"}})
+
+
+def test_bench_task_specs_load():
+    from pheasa.bench.runner import load_task
+
+    root = SCRIPTS.parent / "bench" / "tasks"
+    tasks = [load_task(path) for path in sorted(root.glob("*.toml"))]
+    assert len(tasks) == 8
+    for task in tasks:
+        assert (root / f"{task.name}.md").exists()
+        fields = {f for _, f, _, _ in string.Formatter().parse(task.prompt) if f}
+        assert fields, task.name

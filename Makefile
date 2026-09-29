@@ -19,6 +19,7 @@ validate:
 	uv run python scripts/validate_items.py
 	uv run python scripts/validate_golden.py
 	uv run python scripts/render_landscape.py --check
+	uv run python scripts/lock_tasks.py --check
 
 bench:
 	uv run python scripts/bench_throughput.py --check

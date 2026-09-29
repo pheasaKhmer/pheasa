@@ -1,0 +1,34 @@
+{
+  "encoding-equivalence": {
+    "prompt_sha256": "30c38e2c87bcc78b9df2fc246bdeb77ab7daa761b9ae7258b7ce0ed818d76a7b",
+    "version": "0.1"
+  },
+  "numbers-and-dates": {
+    "prompt_sha256": "51197c94815aa04665cf655b06921fc6a35f5d62e89ffd7ec15b2eed181aff23",
+    "version": "0.1"
+  },
+  "reading-comprehension": {
+    "prompt_sha256": "4ceeefff81311b1ab78a070db496b1c5e5955fe29195baba706e3fec0aa7f3d3",
+    "version": "0.1"
+  },
+  "register-vocabulary": {
+    "prompt_sha256": "2f7d56dcde22e942c49ee3a558d2f398330be5b501c546f7a30ca8b836fd1d4c",
+    "version": "0.1"
+  },
+  "spelling-correction": {
+    "prompt_sha256": "36d1264b6f39a9104105082592d3a05e7839a448d63e6c33e1a3cdf8ae22cb39",
+    "version": "0.1"
+  },
+  "translation-en-km": {
+    "prompt_sha256": "e4bea3b972814321d5d84a68644df81b808668794be1171cc41633567b59b0c2",
+    "version": "0.1"
+  },
+  "translation-km-en": {
+    "prompt_sha256": "e34e556001fd268b9ad25009d42c042dc5a4602df70a83f0e0ca151beea4e31f",
+    "version": "0.1"
+  },
+  "word-segmentation": {
+    "prompt_sha256": "7df3c4aed0e9a6fc64766beffe24e3b202ef304fb093490a740204a92b4a7564",
+    "version": "0.1"
+  }
+}

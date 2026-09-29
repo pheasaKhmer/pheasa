@@ -1,0 +1,9 @@
+# Draft task spec (version 0.x = not approved yet). See word-segmentation.md.
+name = "word-segmentation"
+version = "0.1"
+description = "Insert a space between the words of a Khmer sentence written without word breaks."
+scorer = "boundary_f1"
+max_tokens = 512
+prompt = """Khmer is written without spaces between words. Insert a single space between every two words in the following sentence. Do not change, add or remove any other character. Reply with the segmented sentence only.
+
+{sentence}"""

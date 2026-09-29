@@ -1,0 +1,18 @@
+# Draft task spec (version 0.x = not approved yet). See reading-comprehension.md.
+name = "reading-comprehension"
+version = "0.1"
+description = "Answer a multiple-choice question about a short Khmer passage."
+scorer = "choice"
+max_tokens = 8
+prompt = """Read the Khmer passage and answer the question.
+
+Passage:
+{passage}
+
+Question: {question}
+A. {a}
+B. {b}
+C. {c}
+D. {d}
+
+Reply with "Answer: " followed by the letter of the correct option."""
