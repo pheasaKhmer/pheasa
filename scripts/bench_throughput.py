@@ -33,8 +33,9 @@ MODES: dict[str, Callable[[str], object]] = {
     "report": lambda text: normalize(text, report=True),
     "validate": validate,
 }
-# MB/s. Local runs (Apple M-series, Python 3.12) reach about 7, 1 and 13.
-FLOORS = {"normalize": 1.0, "report": 0.2, "validate": 2.0}
+# MB/s, about a third of the slowest GitHub runner result (Python 3.11: 1.8, 0.37, 3.65).
+# Local runs on Apple M-series reach about 7, 1.2 and 12.
+FLOORS = {"normalize": 0.6, "report": 0.12, "validate": 1.2}
 MAX_GROWTH = 8.0  # time ratio allowed for 4x the input; linear is about 4
 
 
