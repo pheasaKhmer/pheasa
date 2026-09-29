@@ -1,6 +1,6 @@
-.PHONY: check lint format test validate
+.PHONY: check lint format test validate bench
 
-check: lint test validate
+check: lint test validate bench
 
 lint:
 	uv run ruff check .
@@ -17,3 +17,6 @@ validate:
 	uv run python scripts/check_attribution.py
 	uv run python scripts/validate_manifest.py
 	uv run python scripts/validate_items.py
+
+bench:
+	uv run python scripts/bench_throughput.py --check
