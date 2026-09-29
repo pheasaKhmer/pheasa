@@ -42,12 +42,13 @@ class Issue:
 # in code below. U+17D3 is accepted as a modifier, as in Stage 2 and SIL (spec C3), and
 # flagged separately (V7).
 _NON_RO = "[\u1780-\u1799\u179b-\u17a2\u17a5-\u17b3]"
-# U+25CC DOTTED CIRCLE may stand in for the base, as in SIL khtest's `B` pattern, so
-# that a mark shown on its own (dictionaries, teaching material) is not flagged.
+# U+25CC DOTTED CIRCLE may stand in for a base or a coeng's base, as in SIL khtest's `B`
+# pattern, so that a mark shown on its own (dictionaries, teaching) is not flagged.
 DOTTED_CIRCLE = "\u25cc"
+_ANY_BASE = f"(?:{_BASE_CLASS}|{DOTTED_CIRCLE})"
 _SYLLABLE = re.compile(
     # Base Robat? Coengs?
-    f"((?:{_BASE_CLASS}|{DOTTED_CIRCLE})\u17cc?(?:(?:\u17d2{_NON_RO})?\u17d2{_BASE_CLASS})?)"
+    f"({_ANY_BASE}\u17cc?(?:(?:\u17d2{_NON_RO})?\u17d2{_ANY_BASE})?)"
     "([\u17c9\u17ca]\u200c?)?"  # Shifter (with its optional ZWNJ)
     "[\u17b6-\u17c5]?"  # Vowel
     "(?:(?:[\u17c6\u17cb\u17cd-\u17cf\u17d1\u17d3]|(?<!\u17bb)[\u17d0\u17dd])"  # Modifiers
@@ -81,7 +82,9 @@ def _mark_issue(text: str, i: int, after_syllable: bool) -> Issue:
     ch = text[i]
     name = f"U+{ord(ch):04X}"
     if ch == COENG:
-        if i + 1 < len(text) and _KEYS.get(text[i + 1]) is Key.BASE:
+        if i + 1 < len(text) and (
+            _KEYS.get(text[i + 1]) is Key.BASE or text[i + 1] == DOTTED_CIRCLE
+        ):
             return Issue("V4", i, i + 2, "coeng beyond the two allowed, or coeng ro first")
         return Issue("V1", i, i + 1, "coeng is not followed by a base")
     if not after_syllable:
@@ -91,8 +94,12 @@ def _mark_issue(text: str, i: int, after_syllable: bool) -> Issue:
     return Issue("V4", i, i + 1, f"{name} does not fit the syllable structure")
 
 
-def validate(text: str) -> tuple[Issue, ...]:
-    """Return the issues found in `text`, in order. The text is not changed."""
+def validate(text: str, *, start_of_text: bool = True) -> tuple[Issue, ...]:
+    """Return the issues found in `text`, in order. The text is not changed.
+
+    Pass `start_of_text=False` when `text` continues earlier text (for example, a later
+    line of a file), so that a U+FEFF at its start is flagged as mid-text (V8).
+    """
     issues: list[Issue] = []
     n = len(text)
     i = 0
@@ -140,7 +147,7 @@ def validate(text: str) -> tuple[Issue, ...]:
                         f"{name} outside a permitted position",
                     )
                 )
-        elif ch == BOM and i > 0:
+        elif ch == BOM and (i > 0 or not start_of_text):
             issues.append(Issue("V8", i, i + 1, "U+FEFF inside the text (rule 1.2)"))
         i += 1
         after_syllable = False

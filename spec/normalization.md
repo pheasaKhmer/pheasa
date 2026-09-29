@@ -215,8 +215,8 @@ Issues use these codes, with offsets into the validated text:
 | V9 | Cluster left as typed by rule 2.3 (report only) | Rule 2.3 |
 
 The syllable check follows the UTN61 p. 16 Modern Khmer grammar. It also accepts U+17D3
-as a modifier (C3), and accepts U+25CC DOTTED CIRCLE as a base so that a mark shown in
-isolation is not flagged (SIL `khtest` pattern `B`). Stage 2 still treats U+25CC as
+as a modifier (C3), and accepts U+25CC DOTTED CIRCLE as a base or after a coeng so that
+a mark shown in isolation is not flagged (SIL `khtest` pattern `B`). Stage 2 still treats U+25CC as
 Other, as the oracle's sort does.
 
 **Differences from SIL `khtest`.** Anything `khtest` rejects, Pheasa flags. Pheasa is

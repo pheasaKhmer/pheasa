@@ -183,3 +183,8 @@ def test_report_changes_rebuild_the_output(text, opts):
 def test_report_issues_are_validate_plus_rule_2_3(text, opts):
     report = normalize(text, report=True, **opts)
     assert [i for i in report.issues if i.code != "V9"] == list(validate(report.text))
+
+
+def test_validate_accepts_dotted_circle_after_coeng():
+    # Regression: SIL khtest's COENG pattern takes U+25CC as the subscript base.
+    assert codes(cps(0x1780, 0x17D2, 0x25CC)) == []
