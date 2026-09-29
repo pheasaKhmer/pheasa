@@ -1,0 +1,1 @@
+{"source": "https://dumps.wikimedia.org/kmwiki/latest/kmwiki-latest-pages-articles.xml.bz2", "page": "https://dumps.wikimedia.org/kmwiki/", "license": "CC-BY-SA-4.0", "retrieved": "2026-09-30", "transform": "none (downloaded as published)", "file": "data/raw/kmwiki/kmwiki-latest-pages-articles.xml.bz2", "sha256": "6f27b1cfdc7a3b094ed5ae89969342e44497b94b93c8b5066141b8df49e6357f"}
