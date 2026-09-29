@@ -6,7 +6,9 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-Planned as 0.1.0, the first release. Fixes `NORMALIZATION_VERSION = "1"` (D-013).
+## [0.1.0] - 2026-09-30
+
+First release. Fixes `NORMALIZATION_VERSION = "1"` (D-013).
 
 ### Added
 

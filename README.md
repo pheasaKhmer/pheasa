@@ -12,7 +12,8 @@ Pheasa aims to provide:
 - **a benchmark** for measuring how well language models handle Khmer;
 - **datasets and baselines** with documented provenance.
 
-> **Status:** pre-alpha. Nothing is published yet.
+> **Status:** alpha. Version 0.1.0 ships the normalizer (normalization version 1). The
+> benchmark and datasets are in progress.
 
 ## The problem
 
@@ -52,7 +53,7 @@ codes. The rules are specified in [`spec/normalization.md`](https://github.com/p
 ## Install
 
 ```bash
-pip install pheasa   # available once v0.1 is released
+pip install pheasa
 ```
 
 ## Development
