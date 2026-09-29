@@ -327,9 +327,17 @@ def _reorder(text: str, *, preserve_coeng_da: bool = False) -> str:
     """Stages 2 and 3: normalize each syllable cluster in turn."""
     out: list[str] = []
     done = 0
+    # Syllables repeat a lot in real text, so remember each cluster's result for this call.
+    memo: dict[str, str] = {}
     for i, j in _clusters(text):
+        if j - i <= 2:
+            continue  # a base plus one mark is always already in order and has no fold
         cluster = text[i:j]
-        result = _normalize_cluster(cluster, preserve_coeng_da=preserve_coeng_da)
+        result = memo.get(cluster)
+        if result is None:
+            result = memo[cluster] = _normalize_cluster(
+                cluster, preserve_coeng_da=preserve_coeng_da
+            )
         # Rule 2.3: keep the cluster as typed if the result would disturb its neighbour.
         if result != cluster and (j == len(text) or _is_stable(result, text[j])):
             out += (text[done:i], result)
