@@ -27,8 +27,13 @@ spec follows UTN61 and records the conflict (see Conflicts).
 
 ## Pipeline
 
-`normalize(text, **options)` runs these stages in order. Stages 2 and 3 are the UTN61
-core and must match the SIL oracle. Stages 1 and 4 are Pheasa's own policy.
+`normalize(text, **options)` runs these stages. Stages 2 and 3 are the UTN61 core and
+must match the SIL oracle. Stages 1 and 4 are Pheasa's own policy.
+
+Execution order is 1.1, Stage 4, 1.3 (NFC), Stage 2, Stage 3. Stage 4 is numbered last
+because it is optional, but it runs before NFC and before clustering. Removing a ZWSP or
+U+17B4 can join a coeng to the next base or expose `<17DD 17D2>` to NFC, so running the
+options last would give output that changes when normalized again.
 
 ```
 1. pre-clean   BOM, NFC                            (Pheasa policy)
@@ -166,7 +171,9 @@ sequences. See D-009.
 ## Stage 4: options (Pheasa policy)
 
 Everything here is outside UTN61's scope. Anything that removes or rewrites visible
-information is off by default.
+information is off by default. Each option is a per-character substitution applied
+after rule 1.1 and before rule 1.3 (see Pipeline). An unknown option value raises
+`ValueError`.
 
 | Option | Default | Behavior | Source |
 |---|---|---|---|
