@@ -11,7 +11,6 @@ from pheasa.normalize import (
     _ABOVE_VOWELS,
     _BASE_CLASS,
     _KEYS,
-    _STRONG_CONTEXT,
     BOM,
     COENG,
     MUUSIKATOAN,
@@ -20,6 +19,7 @@ from pheasa.normalize import (
     ZWJ,
     ZWNJ,
     Key,
+    _is_strong,
 )
 
 __all__ = ["Issue", "validate"]
@@ -70,7 +70,7 @@ U = "\u17bb"
 def _zwnj_allowed(cluster: str, shifter: str, after: str) -> bool:
     """UTN #61 p. 16: ZWNJ only where the shifter would otherwise downshift."""
     above = after[:1] in _ABOVE_VOWELS or after[:2] == "\u17b6\u17c6"
-    if _STRONG_CONTEXT.search(cluster):
+    if _is_strong(cluster):
         return shifter == TRIISAP and above
     samyok = after[:1] == SAMYOK_SANNYA or (
         after[:1] in "\u17c1\u17c2\u17c3" and after[1:2] == SAMYOK_SANNYA

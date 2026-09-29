@@ -176,7 +176,7 @@ _BASE_CLASS = "[\u1780-\u17a2\u17a5-\u17b3]"
 _U_AFTER_CLUSTER = re.compile(
     f"({_BASE_CLASS}\u17cc?(?:\u17d2{_BASE_CLASS})*)([\u17c1-\u17c5]?)\u17bb"
 )
-# Source: UTN #61 p. 16 (StrongBase, NonBA, StrongContext), p. 23 (S1 = StrongBase)
+# Source: UTN #61 p. 16 (StrongBase), p. 23 (S1 = StrongBase)
 _STRONG_BASES = frozenset(
     chr(cp)
     for first, last in (
@@ -190,18 +190,20 @@ _STRONG_BASES = frozenset(
     )
     for cp in range(first, last + 1)
 )
-_STRONG_BASE = "[" + "".join(sorted(_STRONG_BASES)) + "]"
-# UTN #61 p. 16 lists only consonants in NonBA, but p. 24 treats independent vowels as
-# weak bases that are not BA, and SIL khnormal's NonBA includes them. Without them the
-# regex would call ka + coeng + independent vowel weak, against the p. 17 prose.
-_NON_BA = "[\u1780-\u1793\u1795-\u17a2\u17a5-\u17b3]"
 BA = "\u1794"
-# UTN #61 p. 16 uses this as a lookbehind, so it may match a suffix of the cluster.
-_STRONG_CONTEXT = re.compile(
-    f"(?:{_STRONG_BASE}\u17cc?(?:\u17d2{_NON_BA}){{0,2}}"
-    f"|{_NON_BA}\u17cc?(?:\u17d2{_STRONG_BASE}(?:\u17d2{_NON_BA})?"
-    f"|\u17d2{_NON_BA}\u17d2{_STRONG_BASE}))\\Z"
-)
+
+
+def _is_strong(cluster: str) -> bool:
+    """Is a consonant cluster (base, robat, coengs) STRONG?
+
+    UTN #61 p. 17 and p. 22 (rules 1-3): strong means it contains a series 1 consonant
+    and no BA. The p. 16 regex, used as a lookbehind, can disagree after a BA or with 3+
+    coengs; the prose wins (spec C4, Q-008, D-012). Independent vowels are weak (p. 24).
+    """
+    consonants = cluster.replace("\u17cc", "").replace(COENG, "")
+    return BA not in consonants and any(c in _STRONG_BASES for c in consonants)
+
+
 # Source: UTN #61 p. 16 (AboveVowel); 17B6 counts only with a following 17C6
 _ABOVE_VOWELS = frozenset("\u17b7\u17b8\u17b9\u17ba\u17be\u17dd")
 MUUSIKATOAN = "\u17c9"
@@ -212,14 +214,7 @@ SAMYOK_SANNYA = "\u17d0"
 def _shifter_for_u(cluster: str, pre: str, after: str) -> str | None:
     """Rule 3.6: the shifter a -u stands for, or None to leave the -u alone."""
     above = after[:1] in _ABOVE_VOWELS or after[:2] == "\u17b6\u17c6"
-    consonants = cluster.replace("\u17cc", "").replace(COENG, "")
-    # UTN #61 p. 17 (prose): strong means a series 1 consonant and no BA.
-    strong = BA not in consonants and any(c in _STRONG_BASES for c in consonants)
-    # UTN #61 p. 16 (regex) disagrees with the prose when a strong consonant follows a
-    # BA, or when the cluster has 3 or more coengs. Leave those unchanged (spec O7).
-    if strong != bool(_STRONG_CONTEXT.search(cluster)):
-        return None
-    if strong:
+    if _is_strong(cluster):
         # UTN #61 p. 25: samyok sannya does not push triisap down (spec O6).
         return TRIISAP if above else None
     # UTN #61 p. 16: AboveVowelSamyok = AboveVowel | [17C1-17C3]? 17D0

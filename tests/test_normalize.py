@@ -120,7 +120,7 @@ def joined_pairs(text: str) -> int:
 
 
 def u_deviation_possible(text: str) -> bool:
-    """Could rule 3.6 differ from the oracle here (spec O5 to O7)? Deliberately broad."""
+    """Could rule 3.6 differ from the oracle here (spec O5 to O8)? Deliberately broad."""
     return U in text and (
         any(c in text for c in (SAMYOK_SANNYA, NYO, BA))
         or text.count(COENG) >= 3
@@ -137,7 +137,7 @@ def assert_matches_oracle(text: str) -> None:
     assert (
         joined_pairs(theirs) > joined_pairs(cleaned)  # O1: rule 2.3
         or oracle(theirs) != theirs  # O4: the oracle's own output is not stable
-        or u_deviation_possible(cleaned)  # O5 to O7: rule 3.6
+        or u_deviation_possible(cleaned)  # O5 to O8: rule 3.6
     ), (ours, theirs)
 
 
@@ -272,17 +272,24 @@ def test_unstable_cluster_is_left_as_typed(text):
             cps(0x179F, 0x17BB, 0x17D0),
             cps(0x179F, 0x17CA, 0x17D0),
         ),
-        # O7: UTN #61's prose says BA makes the cluster weak; its regex says strong.
+        # O7: BA makes the cluster weak (UTN #61 prose, Q-008); SIL follows the regex.
         (
             "O7",
             cps(0x1794, 0x17D2, 0x1780, 0x17BB, 0x17B7),
-            cps(0x1794, 0x17D2, 0x1780, 0x17BB, 0x17B7),
+            cps(0x1794, 0x17D2, 0x1780, 0x17C9, 0x17B7),
             cps(0x1794, 0x17D2, 0x1780, 0x17CA, 0x17B7),
         ),
-        # O7: a second robat is outside the cluster grammar; the oracle still matches
-        # the coeng alone.
+        # O7: with three coengs the regex misses the strong base; the prose does not.
         (
             "O7",
+            cps(0x1780, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17BB, 0x17B7),
+            cps(0x1780, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17CA, 0x17B7),
+            cps(0x1780, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17D2, 0x1798, 0x17C9, 0x17B7),
+        ),
+        # O8: a second robat is outside the cluster grammar; the oracle still matches
+        # the coeng alone.
+        (
+            "O8",
             cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17BB, 0x17B9),
             cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17BB, 0x17B9),
             cps(0x179F, 0x17CC, 0x17CC, 0x17D2, 0x179A, 0x17C9, 0x17B9),
