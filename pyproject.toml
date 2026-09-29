@@ -39,6 +39,7 @@ dev = [
     "uharfbuzz>=0.56.2",
 ]
 research = [
+    "pyarrow>=25.0.1",
     "sentencepiece>=0.2.2",
     "tiktoken>=0.14.0",
     "tokenizers>=0.23.2",

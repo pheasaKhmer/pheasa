@@ -201,3 +201,27 @@ def test_landscape_license_groups():
     assert render.group("CC-BY-NC-4.0") == "Non-commercial"
     assert render.group("other (license_name: seallms)") == "Custom, mixed or by agreement"
     assert render.group("unknown") == "Unknown (no license found)"
+
+
+def test_tokenizer_stats_line_aligned_files(tmp_path, capsys):
+    stats = load("tokenizer_stats")
+    (tmp_path / "km.txt").write_text("កា\nខ\n", encoding="utf-8")
+    (tmp_path / "en.txt").write_text("ka\nkha\n", encoding="utf-8")
+    args = ["--km", str(tmp_path / "km.txt"), "--en", str(tmp_path / "en.txt")]
+    assert stats.main([*args, "--tokenizer", "chars"]) == 0
+    assert "2 sentence pairs" in capsys.readouterr().out
+    (tmp_path / "en.txt").write_text("ka\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        stats.main([*args, "--tokenizer", "chars"])
+
+
+def test_encoding_variants_counts(tmp_path, monkeypatch, capsys):
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    variants = load("encoding_variants")
+    canonical = "ខ្មែ"
+    misordered = "ខែ្ម"
+    (tmp_path / "a.txt").write_text(f"{canonical} {canonical} {misordered}\n", encoding="utf-8")
+    assert variants.main([str(tmp_path), "--top", "1"]) == 0
+    out = capsys.readouterr().out
+    assert "syllables seen in 2+ encodings: 1; their tokens: 3" in out
+    assert "tokens not in canonical form: 1 (33.33%)" in out

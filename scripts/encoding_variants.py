@@ -1,6 +1,9 @@
 """Count syllables that occur under more than one byte sequence in a text sample.
 
-    uv run python scripts/encoding_variants.py [--raw data/raw/wikipedia-km] [--top 10]
+    uv run python scripts/encoding_variants.py [CORPUS ...] [--top 10]
+
+CORPUS is a file or directory in any format scripts/lunar_probe.py reads (plain text,
+compressed, JSON Lines or parquet); the default is data/raw/wikipedia-km.
 
 Every syllable cluster (spec rule 2.1) in the NFC text is grouped by its normalized
 form. A syllable "has variants" if the sample contains it under two or more different
@@ -13,7 +16,8 @@ import argparse
 import sys
 import unicodedata
 from collections import Counter, defaultdict
-from pathlib import Path
+
+from lunar_probe import files, lines
 
 from pheasa import normalize
 from pheasa.normalize import _clusters
@@ -25,18 +29,21 @@ def codepoints(text: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--raw", default="data/raw/wikipedia-km")
+    parser.add_argument("corpus", nargs="*", default=["data/raw/wikipedia-km"])
     parser.add_argument("--top", type=int, default=10)
     args = parser.parse_args(argv)
 
     forms: dict[str, Counter] = defaultdict(Counter)
     tokens = 0
-    for path in sorted(Path(args.raw).glob("*.txt")):
-        text = unicodedata.normalize("NFC", path.read_text(encoding="utf-8"))
-        for start, end in _clusters(text):
-            cluster = text[start:end]
-            forms[normalize(cluster)][cluster] += 1
-            tokens += 1
+    for path in files(args.corpus):
+        if path.name.endswith("sample.jsonl"):
+            continue  # probe output, not corpus
+        for line in lines(path):
+            text = unicodedata.normalize("NFC", line)
+            for start, end in _clusters(text):
+                cluster = text[start:end]
+                forms[normalize(cluster)][cluster] += 1
+                tokens += 1
     variant = {norm: raw for norm, raw in forms.items() if len(raw) > 1}
     affected = sum(sum(raw.values()) for raw in variant.values())
     noncanonical = sum(n for norm, raw in forms.items() for form, n in raw.items() if form != norm)

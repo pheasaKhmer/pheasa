@@ -5,7 +5,8 @@
         --tokenizer spm:path/to/model.spm [--json results.json]
 
 PARALLEL is a TSV file (Khmer<TAB>English per line) or JSON Lines with "km" and "en"
-fields: the same sentences in both languages. For each tokenizer this reports, on the
+fields; alternatively pass two line-aligned files with --km and --en. Both sides must be
+the same sentences in the two languages. For each tokenizer this reports, on the
 Khmer side both as given and after `pheasa.normalize`:
 
 - tokens per character and per syllable (syllable = cluster, spec rule 2.1),
@@ -101,12 +102,23 @@ def measure(encode: Encoder, pairs: list[tuple[str, str]]) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("parallel")
+    parser.add_argument("parallel", nargs="?", help="TSV or JSONL of Khmer/English pairs")
+    parser.add_argument("--km", help="Khmer side as a text file, one sentence per line")
+    parser.add_argument("--en", help="English side, line-aligned with --km")
     parser.add_argument("--tokenizer", action="append", required=True, dest="tokenizers")
     parser.add_argument("--json", help="also write the results as JSON")
     args = parser.parse_args(argv)
 
-    pairs = read_pairs(Path(args.parallel))
+    if args.km and args.en:
+        km = Path(args.km).read_text(encoding="utf-8").splitlines()
+        en = Path(args.en).read_text(encoding="utf-8").splitlines()
+        if len(km) != len(en):
+            raise SystemExit(f"--km has {len(km)} lines but --en has {len(en)}")
+        pairs = list(zip(km, en, strict=True))
+    elif args.parallel:
+        pairs = read_pairs(Path(args.parallel))
+    else:
+        raise SystemExit("give PARALLEL, or both --km and --en")
     results = {spec: measure(load_tokenizer(spec), pairs) for spec in args.tokenizers}
     print(f"{len(pairs)} sentence pairs; normalization version {NORMALIZATION_VERSION}\n")
     print("| tokenizer | km tok/char | km tok/syllable | en tok/word | parity | parity (norm.) |")

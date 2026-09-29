@@ -2,8 +2,9 @@
 
     uv run python scripts/lunar_probe.py CORPUS [CORPUS ...] [--sample 100 --out FILE]
 
-CORPUS may be a file or a directory. Files may be plain text, .gz, .bz2 or .xz, and
-.jsonl files are read from their "text" field. Text is streamed line by line, so the
+CORPUS may be a file or a directory. Files may be plain text, .gz, .bz2 or .xz;
+.jsonl files are read from their "text" field, and .parquet files from their "text"
+column (needs pyarrow, in the `research` dependency group). Text is streamed line by line, so the
 corpus never has to fit in memory. Prints counts only; `--out` writes a deterministic
 sample of matches with 30 characters of context on each side, as JSON Lines, for a
 native speaker to classify as lunar date or typing/OCR artifact.
@@ -35,6 +36,13 @@ def files(paths: list[str]) -> Iterator[Path]:
 
 
 def lines(path: Path) -> Iterator[str]:
+    if path.suffix == ".parquet":
+        import pyarrow.parquet  # research dependency group
+
+        for batch in pyarrow.parquet.ParquetFile(path).iter_batches(columns=["text"]):
+            for text in batch.column(0).to_pylist():
+                yield from (text or "").splitlines()
+        return
     opener = OPENERS.get(path.suffix, open)
     is_jsonl = ".jsonl" in path.suffixes
     with opener(path, "rt", encoding="utf-8", errors="replace") as handle:
