@@ -21,3 +21,7 @@ All notable changes to this project are documented here. The format follows
   are listed in the specification (O4–O7, conflict C4).
 - Stage 4 options, all off by default: `zwsp` (`"keep"`, `"strip"`, `"space"`), `digits`
   (`"keep"`, `"khmer"`, `"ascii"`) and `fold_deprecated`.
+- `pheasa.validate`, a checker for the Modern Khmer syllable structure of Unicode
+  Technical Note #61 (issue codes V1–V9), and `normalize(text, report=True)`, which
+  returns the normalized text, every change with input offsets and rule IDs, and the
+  remaining issues.
