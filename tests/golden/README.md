@@ -21,6 +21,9 @@ Pheasa's behavior: any change to these outputs needs a new `NORMALIZATION_VERSIO
 
 Extra fields (such as the code points added by the draft tool) are allowed.
 
+Fixture text keeps the license of its source, which each record states. For example,
+text from Khmer Wikipedia is CC BY-SA 4.0 and is attributed through `source`.
+
 ## Adding fixtures
 
 1. Put candidate lines in a text file and run
@@ -32,6 +35,10 @@ Extra fields (such as the code points added by the draft tool) are allowed.
 3. Fill in `verified_by` and `verified_at`, and move the line to `normalization.jsonl`.
    If `expected` is wrong, do not edit it: record the case in an issue instead, since
    it means the normalizer needs a change.
+
+For Khmer Wikipedia, `scripts/fetch_wikipedia_km.py` fetches a sample (raw text stays
+in the git-ignored `data/raw/`), `scripts/draft_wikipedia_fixtures.py` picks sentences,
+and `scripts/review_drafts.py` writes a review page with correct/wrong buttons.
 
 `make check` validates every record (`scripts/validate_golden.py`) and runs it through
 the normalizer (`tests/test_golden.py`). Files in `drafts/` are not checked.

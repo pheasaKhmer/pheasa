@@ -35,6 +35,9 @@ All notable changes to this project are documented here. The format follows
   (`scripts/validate_golden.py`, run by `make check`) requiring provenance, a verifier and
   no handles or email addresses, a test that runs every fixture, and a draft tool
   (`scripts/golden_draft.py`) for preparing candidates. No fixtures yet.
+- Khmer Wikipedia sample tooling: a fetch script with a provenance manifest
+  (`data/wikipedia-km/manifest.jsonl`, 146 articles, CC BY-SA 4.0), a script that drafts
+  fixtures from it, 70 drafts awaiting verification, and an HTML review page generator.
 
 ### Changed
 
