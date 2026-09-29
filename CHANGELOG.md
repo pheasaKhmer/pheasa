@@ -29,6 +29,8 @@ All notable changes to this project are documented here. The format follows
   `--report` as JSON lines) and `pheasa validate` (exit status 1 if issues are found).
 - Throughput benchmark (`scripts/bench_throughput.py`), run by `make check` and CI, which
   fails on superlinear slowdowns or throughput below a floor.
+- `scripts/check_shifter_rendering.py`, a HarfBuzz check of whether text typed with the
+  consonant shifter before the subscript renders like the reordered text (conflict C1).
 
 ### Changed
 
