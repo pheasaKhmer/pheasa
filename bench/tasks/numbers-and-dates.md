@@ -1,4 +1,4 @@
-# Task: numbers-and-dates (draft, version 0.2)
+# Task: numbers-and-dates (draft, version 0.3)
 
 Convert numbers and dates between Khmer words, Khmer digits and Arabic digits.
 
@@ -9,12 +9,13 @@ Convert numbers and dates between Khmer words, Khmer digits and Arabic digits.
 One JSON object per line in `bench/items/numbers-and-dates/`:
 
 ```json
-{"id": "numbers-and-dates-0001", "input": {"instruction": "...", "text": "..."}, "reference": "...", "verified_by": "...", "verified_at": "YYYY-MM-DD"}
+{"id": "numbers-and-dates-0001", "input": {"instruction_en": "...", "instruction_km": "...", "text": "..."}, "reference": "..." or ["...", "..."], "verified_by": "...", "verified_at": "YYYY-MM-DD"}
 ```
 
 Input fields:
 
-- `instruction`: what to convert, e.g. to Khmer digits or to words
+- `instruction_en`, `instruction_km`: what to convert (e.g. to Khmer digits or to words),
+  in English and in Khmer, for the two prompt languages
 - `text`: a number or date
 
 ## Model output and scoring

@@ -87,6 +87,12 @@ def estimate(
     return Estimate(len(items), cached, input_tokens, output_tokens, usd)
 
 
+def references(item: dict) -> list[str]:
+    """Accepted answers: `reference` may be one string or a list of equally valid ones."""
+    reference = item["reference"]
+    return list(reference) if isinstance(reference, list) else [reference]
+
+
 class BudgetExceeded(RuntimeError):
     def __init__(self, spent: float, results: list[dict]) -> None:
         super().__init__(f"stopped at ${spent:.4f}: the next call could exceed --max-usd")
@@ -135,7 +141,7 @@ def run(
             {
                 "id": item["id"],
                 "response": entry["response"],
-                "score": score(entry["response"], item["reference"]),
+                "score": max(score(entry["response"], ref) for ref in references(item)),
                 "cached": cached,
                 "usd": cost,
             }

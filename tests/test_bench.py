@@ -151,3 +151,13 @@ def test_prompt_language(task_files, capsys):
     base = [str(task_files / "task.toml"), str(task_files / "items.jsonl"), "--model", "fake:echo"]
     assert main(["bench", *base, "--lang", "km", "--dry-run"]) == 2
     assert "no 'km' prompt" in capsys.readouterr().err
+
+
+def test_several_accepted_references(tmp_path):
+    (tmp_path / "task.toml").write_text(TASK, encoding="utf-8")
+    item = {"id": "x", "input": {"word": "b"}, "reference": ["a", "b"]}
+    task = runner.load_task(tmp_path / "task.toml")
+    results, _ = runner.run(
+        task, [item], FakeProvider("fake:echo"), ResponseCache(tmp_path / "c"), 1
+    )
+    assert results[0]["score"] == 1.0

@@ -1,11 +1,11 @@
 # Draft task spec (version 0.x = not approved yet). See numbers-and-dates.md.
 name = "numbers-and-dates"
-version = "0.2"
+version = "0.3"
 description = "Convert numbers and dates between Khmer words, Khmer digits and Arabic digits."
 scorer = "exact"
 max_tokens = 64
 [prompts]
-en = """{instruction}
+en = """{instruction_en}
 
 {text}
 

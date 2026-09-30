@@ -4,16 +4,16 @@
     "version": "0.2"
   },
   "numbers-and-dates": {
-    "prompt_sha256": "7ca6322b8c2bd6edf9159ab8e8f207040e0ac8d42f3d2327f13f7d2a19e88894",
-    "version": "0.2"
+    "prompt_sha256": "f724bef8a2010203bcab1e389a1ea80fc13783bce5be6050f2d899d9829ace82",
+    "version": "0.3"
   },
   "reading-comprehension": {
     "prompt_sha256": "c99503a2908bd797be6852ea11a5d451d82bba8e4b115fa27ae9f0bb0e1c5acb",
     "version": "0.2"
   },
   "register-vocabulary": {
-    "prompt_sha256": "266f14b8bbe3be6a890ae36c90e1cfa8b64dd263dea6689f4779a9df1b8d2465",
-    "version": "0.2"
+    "prompt_sha256": "bb6984050dd83f5e49bf266a8970b02fe7ad0475aaafa8e9694f34932b95b0f2",
+    "version": "0.3"
   },
   "spelling-correction": {
     "prompt_sha256": "d5bce5b4145d1d8351aef931903bcd02cb48d4530c110d2517c7a92512f392ca",

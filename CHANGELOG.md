@@ -16,6 +16,11 @@ All notable changes to this project are documented here. The format follows
 - Eight draft pilot task specs in `bench/tasks/` (version 0.2), with a lock that
   requires a version bump whenever a prompt changes. Each task can carry prompts in
   several languages; `pheasa bench --lang km` selects the Khmer prompt once it exists.
+- An item's `reference` may list several accepted answers; the best match counts.
+  numbers-and-dates and register-vocabulary (now version 0.3) carry their instruction or
+  context in English and Khmer.
+- `scripts/draft_encoding_pairs.py`, which drafts encoding-equivalence items from
+  strings attested in a corpus.
 
 ## [0.1.0] - 2026-09-30
 

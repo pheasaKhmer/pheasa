@@ -1,4 +1,4 @@
-# Task: register-vocabulary (draft, version 0.2)
+# Task: register-vocabulary (draft, version 0.3)
 
 Choose the word of the right register (royal, monastic or common) for a context.
 
@@ -9,12 +9,13 @@ Choose the word of the right register (royal, monastic or common) for a context.
 One JSON object per line in `bench/items/register-vocabulary/`:
 
 ```json
-{"id": "register-vocabulary-0001", "input": {"context": "...", "a": "...", "b": "...", "c": "...", "d": "..."}, "reference": "...", "verified_by": "...", "verified_at": "YYYY-MM-DD"}
+{"id": "register-vocabulary-0001", "input": {"context_en": "...", "context_km": "...", "a": "...", "b": "...", "c": "...", "d": "..."}, "reference": "...", "verified_by": "...", "verified_at": "YYYY-MM-DD"}
 ```
 
 Input fields:
 
-- `context`: who is speaking about whom, e.g. addressing a monk
+- `context_en`, `context_km`: who is speaking about whom (e.g. addressing a monk), in
+  English and in Khmer
 - `a`: option A
 - `b`: option B
 - `c`: option C
