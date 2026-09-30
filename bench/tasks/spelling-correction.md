@@ -1,4 +1,4 @@
-# Task: spelling-correction (draft, version 0.1)
+# Task: spelling-correction (draft, version 0.2)
 
 Correct the one misspelled word in a Khmer sentence and return the whole sentence.
 
@@ -18,7 +18,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`spelling-correction.toml`](./spelling-correction.toml). The model should reply with the corrected sentence.
+The prompts (English, and Khmer once verified) are in [`spelling-correction.toml`](./spelling-correction.toml). The model should reply with the corrected sentence.
 
 Scoring: `exact`: equal after `pheasa.normalize`, ZWSP removal and whitespace collapsing, so encoding differences are not counted as errors. Results are reported as a mean with a 95% bootstrap confidence
 interval.

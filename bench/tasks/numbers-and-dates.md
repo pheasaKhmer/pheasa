@@ -1,4 +1,4 @@
-# Task: numbers-and-dates (draft, version 0.1)
+# Task: numbers-and-dates (draft, version 0.2)
 
 Convert numbers and dates between Khmer words, Khmer digits and Arabic digits.
 
@@ -19,7 +19,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`numbers-and-dates.toml`](./numbers-and-dates.toml). The model should reply with the converted form.
+The prompts (English, and Khmer once verified) are in [`numbers-and-dates.toml`](./numbers-and-dates.toml). The model should reply with the converted form.
 
 Scoring: `exact` on canonical text. Results are reported as a mean with a 95% bootstrap confidence
 interval.

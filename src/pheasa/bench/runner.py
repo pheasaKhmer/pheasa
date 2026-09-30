@@ -25,17 +25,22 @@ SCORERS: dict[str, Callable[[str, str], float]] = {
 
 @dataclass(frozen=True)
 class Task:
-    """A task spec: bench/tasks/<name>.toml. Changing `prompt` requires a new `version`."""
+    """A task spec: bench/tasks/<name>.toml. `prompts` maps a language code ("en", "km")
+    to a prompt template; changing any prompt requires a new `version`."""
 
     name: str
     version: str
     description: str
-    prompt: str
+    prompts: dict[str, str]
     scorer: str
     max_tokens: int
 
-    def render(self, item: dict) -> str:
-        return self.prompt.format(**item["input"])
+    def render(self, item: dict, lang: str = "en") -> str:
+        if lang not in self.prompts:
+            raise ValueError(
+                f"task {self.name} has no {lang!r} prompt (has {sorted(self.prompts)})"
+            )
+        return self.prompts[lang].format(**item["input"])
 
 
 def load_task(path: Path | str) -> Task:
@@ -61,16 +66,18 @@ class Estimate:
     usd: float
 
 
-def _params(task: Task) -> dict:
-    return {"max_tokens": task.max_tokens, "temperature": 0}
+def _params(task: Task, lang: str) -> dict:
+    return {"max_tokens": task.max_tokens, "temperature": 0, "prompt_language": lang}
 
 
-def estimate(task: Task, items: list[dict], provider: Provider, cache: ResponseCache) -> Estimate:
+def estimate(
+    task: Task, items: list[dict], provider: Provider, cache: ResponseCache, lang: str = "en"
+) -> Estimate:
     """Upper bound on what running `items` would cost. Cached items cost nothing."""
     cached = input_tokens = output_tokens = 0
     for item in items:
-        prompt = task.render(item)
-        key = cache_key(provider.name, task.name, task.version, prompt, _params(task))
+        prompt = task.render(item, lang)
+        key = cache_key(provider.name, task.name, task.version, prompt, _params(task, lang))
         if cache.get(key) is not None:
             cached += 1
             continue
@@ -92,6 +99,7 @@ def run(
     provider: Provider,
     cache: ResponseCache,
     max_usd: float,
+    lang: str = "en",
 ) -> tuple[list[dict], float]:
     """Score every item, reusing cached responses. Returns (results, USD spent).
 
@@ -102,8 +110,8 @@ def run(
     score = SCORERS[task.scorer]
     results, spent = [], 0.0
     for item in items:
-        prompt = task.render(item)
-        key = cache_key(provider.name, task.name, task.version, prompt, _params(task))
+        prompt = task.render(item, lang)
+        key = cache_key(provider.name, task.name, task.version, prompt, _params(task, lang))
         entry, cost = cache.get(key), 0.0
         cached = entry is not None
         if not cached:
@@ -118,7 +126,7 @@ def run(
                 "task": task.name,
                 "task_version": task.version,
                 "prompt": prompt,
-                "params": _params(task),
+                "params": _params(task, lang),
                 "response": response.text,
                 "usage": {"input": response.input_tokens, "output": response.output_tokens},
             }

@@ -13,8 +13,9 @@ All notable changes to this project are documented here. The format follows
   deterministic scorers (exact match on normalized text, multiple choice, chrF++ tested
   equal to sacreBLEU, word-boundary F1) and bootstrap confidence intervals. Run it with
   `pheasa bench`. Only offline test models exist so far.
-- Eight draft pilot task specs in `bench/tasks/`, with a lock that requires a version
-  bump whenever a prompt changes.
+- Eight draft pilot task specs in `bench/tasks/` (version 0.2), with a lock that
+  requires a version bump whenever a prompt changes. Each task can carry prompts in
+  several languages; `pheasa bench --lang km` selects the Khmer prompt once it exists.
 
 ## [0.1.0] - 2026-09-30
 

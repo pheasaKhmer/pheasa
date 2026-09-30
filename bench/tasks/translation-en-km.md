@@ -1,4 +1,4 @@
-# Task: translation-en-km (draft, version 0.1)
+# Task: translation-en-km (draft, version 0.2)
 
 Translate an English sentence into Khmer.
 
@@ -18,7 +18,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`translation-en-km.toml`](./translation-en-km.toml). The model should reply with a Khmer reference translation.
+The prompts (English, and Khmer once verified) are in [`translation-en-km.toml`](./translation-en-km.toml). The model should reply with a Khmer reference translation.
 
 Scoring: `chrf` on canonical Khmer: both sides are normalized first, so encoding variants are not penalized. Results are reported as a mean with a 95% bootstrap confidence
 interval.

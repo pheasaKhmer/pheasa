@@ -1,4 +1,4 @@
-# Task: word-segmentation (draft, version 0.1)
+# Task: word-segmentation (draft, version 0.2)
 
 Insert a space between the words of a Khmer sentence written without word breaks.
 
@@ -18,7 +18,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`word-segmentation.toml`](./word-segmentation.toml). The model should reply with the same sentence with one space (or ZWSP) between words.
+The prompts (English, and Khmer once verified) are in [`word-segmentation.toml`](./word-segmentation.toml). The model should reply with the same sentence with one space (or ZWSP) between words.
 
 Scoring: `boundary_f1`: F1 over word-boundary positions; 0 if the model changed any character of the sentence. Results are reported as a mean with a 95% bootstrap confidence
 interval.

@@ -1,4 +1,4 @@
-# Task: encoding-equivalence (draft, version 0.1)
+# Task: encoding-equivalence (draft, version 0.2)
 
 Decide whether two Khmer strings spell the same word, possibly typed in a different character order.
 
@@ -19,7 +19,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`encoding-equivalence.toml`](./encoding-equivalence.toml). The model should reply with "A" (same word) or "B" (different words).
+The prompts (English, and Khmer once verified) are in [`encoding-equivalence.toml`](./encoding-equivalence.toml). The model should reply with "A" (same word) or "B" (different words).
 
 Scoring: `choice`: the letter after "Answer:", else the first standalone capital letter. Results are reported as a mean with a 95% bootstrap confidence
 interval.

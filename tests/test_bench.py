@@ -91,7 +91,8 @@ version = "1"
 description = "Repeat the last line."
 scorer = "exact"
 max_tokens = 16
-prompt = \"\"\"Repeat the word.
+[prompts]
+en = \"\"\"Repeat the word.
 {word}\"\"\"
 """
 
@@ -141,3 +142,12 @@ def test_bench_command(task_files, capsys):
     assert main(["bench", *base, "--out", str(task_files / "out.jsonl")]) == 0
     assert "score 0.667" in capsys.readouterr().out
     assert len((task_files / "out.jsonl").read_text().splitlines()) == 3
+
+
+def test_prompt_language(task_files, capsys):
+    task = runner.load_task(task_files / "task.toml")
+    with pytest.raises(ValueError, match="no 'km' prompt"):
+        task.render({"input": {"word": "a"}}, "km")
+    base = [str(task_files / "task.toml"), str(task_files / "items.jsonl"), "--model", "fake:echo"]
+    assert main(["bench", *base, "--lang", "km", "--dry-run"]) == 2
+    assert "no 'km' prompt" in capsys.readouterr().err

@@ -1,10 +1,11 @@
 # Draft task spec (version 0.x = not approved yet). See register-vocabulary.md.
 name = "register-vocabulary"
-version = "0.1"
+version = "0.2"
 description = "Choose the word of the right register (royal, monastic or common) for a context."
 scorer = "choice"
 max_tokens = 8
-prompt = """Choose the Khmer word that is correct for the context described below.
+[prompts]
+en = """Choose the Khmer word that is correct for the context described below.
 
 Context: {context}
 A. {a}

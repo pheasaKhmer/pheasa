@@ -1,10 +1,11 @@
 # Draft task spec (version 0.x = not approved yet). See encoding-equivalence.md.
 name = "encoding-equivalence"
-version = "0.1"
+version = "0.2"
 description = "Decide whether two Khmer strings spell the same word, possibly typed in a different character order."
 scorer = "choice"
 max_tokens = 8
-prompt = """You are shown two Khmer strings. Some pairs are the same word typed with the characters in a different order; others are different words.
+[prompts]
+en = """You are shown two Khmer strings. Some pairs are the same word typed with the characters in a different order; others are different words.
 
 String 1: {first}
 String 2: {second}

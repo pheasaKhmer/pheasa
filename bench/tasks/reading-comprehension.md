@@ -1,4 +1,4 @@
-# Task: reading-comprehension (draft, version 0.1)
+# Task: reading-comprehension (draft, version 0.2)
 
 Answer a multiple-choice question about a short Khmer passage.
 
@@ -23,7 +23,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`reading-comprehension.toml`](./reading-comprehension.toml). The model should reply with the letter of the correct option, "A" to "D".
+The prompts (English, and Khmer once verified) are in [`reading-comprehension.toml`](./reading-comprehension.toml). The model should reply with the letter of the correct option, "A" to "D".
 
 Scoring: `choice`. Results are reported as a mean with a 95% bootstrap confidence
 interval.

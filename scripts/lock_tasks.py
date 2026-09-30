@@ -25,7 +25,8 @@ def current() -> dict[str, dict[str, str]]:
     entries = {}
     for path in sorted(TASKS.glob("*.toml")):
         task = tomllib.loads(path.read_text(encoding="utf-8"))
-        digest = hashlib.sha256(task["prompt"].encode("utf-8")).hexdigest()
+        prompts = json.dumps(task["prompts"], sort_keys=True, ensure_ascii=False)
+        digest = hashlib.sha256(prompts.encode("utf-8")).hexdigest()
         entries[task["name"]] = {"version": task["version"], "prompt_sha256": digest}
     return entries
 

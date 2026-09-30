@@ -98,9 +98,12 @@ def _bench_command(args: argparse.Namespace) -> int:
 
     task, items = runner.load_task(args.task), runner.load_items(args.items)
     provider, cache = get_provider(args.model), ResponseCache(args.cache)
-    guess = runner.estimate(task, items, provider, cache)
+    if args.lang not in task.prompts:
+        print(f"pheasa: task {task.name} has no {args.lang!r} prompt", file=sys.stderr)
+        return 2
+    guess = runner.estimate(task, items, provider, cache, args.lang)
     print(
-        f"{task.name} v{task.version} on {provider.name}: {guess.items} items "
+        f"{task.name} v{task.version} ({args.lang}) on {provider.name}: {guess.items} items "
         f"({guess.cached} cached); at most {guess.input_tokens} input and "
         f"{guess.output_tokens} output tokens; at most ${guess.usd:.4f}"
     )
@@ -111,7 +114,7 @@ def _bench_command(args: argparse.Namespace) -> int:
         return 2
     try:
         budget = args.max_usd if args.max_usd is not None else float("inf")  # offline only
-        results, spent = runner.run(task, items, provider, cache, budget)
+        results, spent = runner.run(task, items, provider, cache, budget, args.lang)
     except runner.BudgetExceeded as stop:
         print(f"pheasa: {stop}", file=sys.stderr)
         results, spent = stop.results, stop.spent
@@ -167,6 +170,7 @@ def _parser() -> argparse.ArgumentParser:
     bench.add_argument("--model", required=True, help="provider:model, e.g. fake:echo")
     bench.add_argument("--dry-run", action="store_true", help="print the cost estimate only")
     bench.add_argument("--max-usd", type=float, help="abort before spending more than this")
+    bench.add_argument("--lang", default="en", help="prompt language: en or km")
     bench.add_argument("--cache", default="bench/cache", help="response cache directory")
     bench.add_argument("--out", help="write per-item results as JSON lines")
     bench.set_defaults(handler=_bench_command)

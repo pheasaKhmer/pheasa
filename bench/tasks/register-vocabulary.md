@@ -1,4 +1,4 @@
-# Task: register-vocabulary (draft, version 0.1)
+# Task: register-vocabulary (draft, version 0.2)
 
 Choose the word of the right register (royal, monastic or common) for a context.
 
@@ -22,7 +22,7 @@ Input fields:
 
 ## Model output and scoring
 
-The prompt is in [`register-vocabulary.toml`](./register-vocabulary.toml). The model should reply with the letter of the correct option, "A" to "D".
+The prompts (English, and Khmer once verified) are in [`register-vocabulary.toml`](./register-vocabulary.toml). The model should reply with the letter of the correct option, "A" to "D".
 
 Scoring: `choice`. Results are reported as a mean with a 95% bootstrap confidence
 interval.

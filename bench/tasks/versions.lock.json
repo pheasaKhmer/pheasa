@@ -1,34 +1,34 @@
 {
   "encoding-equivalence": {
-    "prompt_sha256": "30c38e2c87bcc78b9df2fc246bdeb77ab7daa761b9ae7258b7ce0ed818d76a7b",
-    "version": "0.1"
+    "prompt_sha256": "cb7534334a10e41d9440bac74028feb573f7c63dca7721ceaaf51ba50423acc7",
+    "version": "0.2"
   },
   "numbers-and-dates": {
-    "prompt_sha256": "51197c94815aa04665cf655b06921fc6a35f5d62e89ffd7ec15b2eed181aff23",
-    "version": "0.1"
+    "prompt_sha256": "7ca6322b8c2bd6edf9159ab8e8f207040e0ac8d42f3d2327f13f7d2a19e88894",
+    "version": "0.2"
   },
   "reading-comprehension": {
-    "prompt_sha256": "4ceeefff81311b1ab78a070db496b1c5e5955fe29195baba706e3fec0aa7f3d3",
-    "version": "0.1"
+    "prompt_sha256": "c99503a2908bd797be6852ea11a5d451d82bba8e4b115fa27ae9f0bb0e1c5acb",
+    "version": "0.2"
   },
   "register-vocabulary": {
-    "prompt_sha256": "2f7d56dcde22e942c49ee3a558d2f398330be5b501c546f7a30ca8b836fd1d4c",
-    "version": "0.1"
+    "prompt_sha256": "266f14b8bbe3be6a890ae36c90e1cfa8b64dd263dea6689f4779a9df1b8d2465",
+    "version": "0.2"
   },
   "spelling-correction": {
-    "prompt_sha256": "36d1264b6f39a9104105082592d3a05e7839a448d63e6c33e1a3cdf8ae22cb39",
-    "version": "0.1"
+    "prompt_sha256": "d5bce5b4145d1d8351aef931903bcd02cb48d4530c110d2517c7a92512f392ca",
+    "version": "0.2"
   },
   "translation-en-km": {
-    "prompt_sha256": "e4bea3b972814321d5d84a68644df81b808668794be1171cc41633567b59b0c2",
-    "version": "0.1"
+    "prompt_sha256": "feee278d6bf980a159452ceaeba27b48d164d4401bf8621ac6d24b0a97e5d7f3",
+    "version": "0.2"
   },
   "translation-km-en": {
-    "prompt_sha256": "e34e556001fd268b9ad25009d42c042dc5a4602df70a83f0e0ca151beea4e31f",
-    "version": "0.1"
+    "prompt_sha256": "ecf9073019390271d44891bd8405f0b22951e89a431c4a372ec3e09734aaf75e",
+    "version": "0.2"
   },
   "word-segmentation": {
-    "prompt_sha256": "7df3c4aed0e9a6fc64766beffe24e3b202ef304fb093490a740204a92b4a7564",
-    "version": "0.1"
+    "prompt_sha256": "b397883f8bd97b4142e88e7b5166c4f5758d5dcd1dd29ca3f963ed1eafe010de",
+    "version": "0.2"
   }
 }

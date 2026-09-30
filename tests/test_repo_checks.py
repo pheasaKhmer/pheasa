@@ -244,5 +244,6 @@ def test_bench_task_specs_load():
     assert len(tasks) == 8
     for task in tasks:
         assert (root / f"{task.name}.md").exists()
-        fields = {f for _, f, _, _ in string.Formatter().parse(task.prompt) if f}
-        assert fields, task.name
+        assert "en" in task.prompts, task.name
+        for prompt in task.prompts.values():
+            assert {f for _, f, _, _ in string.Formatter().parse(prompt) if f}, task.name

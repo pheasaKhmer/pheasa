@@ -1,9 +1,10 @@
 # Draft task spec (version 0.x = not approved yet). See spelling-correction.md.
 name = "spelling-correction"
-version = "0.1"
+version = "0.2"
 description = "Correct the one misspelled word in a Khmer sentence and return the whole sentence."
 scorer = "exact"
 max_tokens = 256
-prompt = """The following Khmer sentence contains exactly one misspelled word. Rewrite the sentence with that word corrected. Change nothing else. Reply with the corrected sentence only.
+[prompts]
+en = """The following Khmer sentence contains exactly one misspelled word. Rewrite the sentence with that word corrected. Change nothing else. Reply with the corrected sentence only.
 
 {sentence}"""
