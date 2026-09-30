@@ -22,6 +22,7 @@ All notable changes to this project are documented here. The format follows
 - `scripts/draft_encoding_pairs.py`, which drafts encoding-equivalence items from
   strings attested in a corpus.
 - `scripts/review_items.py`, a local page for picking draft items and prompts.
+- `pheasa.bench.inspect_task`: run any benchmark task in Inspect with Pheasa's scorers (D-014).
 
 ## [0.1.0] - 2026-09-30
 

@@ -33,6 +33,19 @@ pheasa bench bench/tasks/NAME.toml bench/items/NAME/dev.jsonl --model MODEL --ma
 - Only the offline `fake:echo` and `fake:constant:TEXT` models exist until an API budget
   is approved.
 
+### In Inspect
+
+The same tasks run in [Inspect](https://inspect.aisi.org.uk/) with Pheasa's prompts,
+items and scorers (install `inspect-ai` first):
+
+```bash
+inspect eval src/pheasa/bench/inspect_task.py@pheasa \
+  -T task=bench/tasks/NAME.toml -T items=bench/items/NAME/pilot.jsonl -T lang=en --model MODEL
+```
+
+Inspect's own cache and limits apply there; the `--dry-run` estimate and the run-wide
+budget are `pheasa bench` features.
+
 ## Scoring
 
 Every scorer compares text after `pheasa.normalize`, so encoding variants never count
