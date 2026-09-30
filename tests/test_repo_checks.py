@@ -247,3 +247,28 @@ def test_bench_task_specs_load():
         assert "en" in task.prompts, task.name
         for prompt in task.prompts.values():
             assert {f for _, f, _, _ in string.Formatter().parse(prompt) if f}, task.name
+
+
+def test_review_items_page(tmp_path):
+    review = load("review_items")
+    drafts = tmp_path / "drafts"
+    drafts.mkdir()
+    item = {
+        "id": "numbers-and-dates-d001",
+        "input": {"instruction_en": "Convert", "instruction_km": "x", "text": "7"},
+        "reference": ["៧", "7"],
+        "notes": "n",
+        "source": "https://example.org",
+    }
+    (drafts / "numbers-and-dates.jsonl").write_text(json.dumps(item) + "\n", encoding="utf-8")
+    (drafts / "prompts-km.toml").write_text('[numbers-and-dates]\nkm = """{text}"""\n', "utf-8")
+    page = tmp_path / "pick.html"
+    assert (
+        review.main(
+            [str(drafts), "--tasks", str(SCRIPTS.parent / "bench" / "tasks"), "--html", str(page)]
+        )
+        == 0
+    )
+    content = page.read_text(encoding="utf-8")
+    assert 'id="numbers-and-dates-d001"' in content and 'id="prompt-numbers-and-dates"' in content
+    assert "៧ | 7" in content and 'value="drop"' in content

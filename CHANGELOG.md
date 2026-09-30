@@ -21,6 +21,7 @@ All notable changes to this project are documented here. The format follows
   context in English and Khmer.
 - `scripts/draft_encoding_pairs.py`, which drafts encoding-equivalence items from
   strings attested in a corpus.
+- `scripts/review_items.py`, a local page for picking draft items and prompts.
 
 ## [0.1.0] - 2026-09-30
 
