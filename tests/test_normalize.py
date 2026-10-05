@@ -66,28 +66,36 @@ khmer_text = st.lists(st.sampled_from(KHMER_TEXT_ALPHABET), max_size=24).map("".
 mixed_text = st.lists(st.sampled_from(MIXED_ALPHABET), max_size=24).map("".join)
 
 # One token per Stage 2 sort key. Joiner units (COENG + base, ZWJ + COENG + consonant)
-# are atomic, so every COENG and ZWJ is followed by what it joins.
-TOKENS_BY_KEY = {
-    "robat": st.just("\u17cc"),
-    "coeng": st.sampled_from(BASES).map(lambda b: COENG + b),
-    "shifter": st.sampled_from(chars(0x17C9, 0x17CA)),
-    "zwnj": st.just(ZWNJ),
-    "vowel_pre": st.sampled_from(chars(0x17BE, 0x17C5)),
-    "vowel_below": st.sampled_from(chars(0x17BB, 0x17BD)),
-    "vowel_above": st.sampled_from(chars(0x17B7, 0x17BA)),
-    "vowel_post": st.just("\u17b6"),
-    "modifier": st.sampled_from([*chars(0x17C6, 0x17C6), "\u17cb", *chars(0x17CD, 0x17D1)]),
-    "final": st.sampled_from(chars(0x17C7, 0x17C8)),
-    "final_coeng": st.sampled_from(CONSONANTS).map(lambda c: ZWJ + COENG + c),
+# are atomic, so every COENG and ZWJ is followed by what it joins. The choices are plain
+# lists so that scripts/export_rust_fixtures.py can sample the same tokens.
+TOKEN_CHOICES = {
+    "robat": ["\u17cc"],
+    "coeng": [COENG + b for b in BASES],
+    "shifter": chars(0x17C9, 0x17CA),
+    "zwnj": [ZWNJ],
+    "vowel_pre": chars(0x17BE, 0x17C5),
+    "vowel_below": chars(0x17BB, 0x17BD),
+    "vowel_above": chars(0x17B7, 0x17BA),
+    "vowel_post": ["\u17b6"],
+    "modifier": [*chars(0x17C6, 0x17C6), "\u17cb", *chars(0x17CD, 0x17D1)],
+    "final": chars(0x17C7, 0x17C8),
+    "final_coeng": [ZWJ + COENG + c for c in CONSONANTS],
 }
-any_token = st.one_of(*TOKENS_BY_KEY.values(), st.just("\u17d3"), st.just("\u17dd"))
+# Marks a well-formed cluster may also contain, outside the per-key tokens.
+OTHER_TOKENS = ["\u17d3", "\u17dd"]
+SEPARATORS = [" ", ZWSP, "\u17d4", "a"]
+# What may follow the -u in a rule 3.6 cluster.
+U_FOLLOWERS = [*chars(0x17B6, 0x17C5), "\u17c6", SAMYOK_SANNYA, "\u17dd"]
+
+TOKENS_BY_KEY = {key: st.sampled_from(choices) for key, choices in TOKEN_CHOICES.items()}
+any_token = st.one_of(*TOKENS_BY_KEY.values(), *map(st.just, OTHER_TOKENS))
 wellformed_cluster = st.builds(
     lambda base, tokens: base + "".join(tokens),
     st.sampled_from(BASES),
     st.lists(any_token, max_size=6),
 )
 wellformed_text = st.lists(
-    st.one_of(wellformed_cluster, st.sampled_from([" ", ZWSP, "\u17d4", "a"])),
+    st.one_of(wellformed_cluster, st.sampled_from(SEPARATORS)),
     max_size=6,
 ).map("".join)
 
@@ -98,10 +106,7 @@ u_cluster = st.builds(
     st.sampled_from(BASES),
     st.sampled_from(["", ROBAT]),
     st.lists(TOKENS_BY_KEY["coeng"], max_size=3),
-    st.lists(
-        st.sampled_from([*chars(0x17B6, 0x17C5), "\u17c6", SAMYOK_SANNYA, "\u17dd"]),
-        max_size=2,
-    ),
+    st.lists(st.sampled_from(U_FOLLOWERS), max_size=2),
 )
 
 

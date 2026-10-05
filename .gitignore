@@ -21,3 +21,6 @@ data/raw/
 
 # Benchmark response cache (raw model outputs); publishing policy not decided yet
 bench/cache/
+
+# Rust build output
+/rust/target/

@@ -23,6 +23,12 @@ All notable changes to this project are documented here. The format follows
   strings attested in a corpus.
 - `scripts/review_items.py`, a local page for picking draft items and prompts.
 - `pheasa.bench.inspect_task`: run any benchmark task in Inspect with Pheasa's scorers (D-014).
+- A Rust port of `normalize` in `rust/` (crate `pheasa`, D-015), for places without
+  Python such as keyboards on phones. It gives the same output as the Python package for
+  every option, under the same `NORMALIZATION_VERSION`, and is tested against 24,040
+  inputs whose outputs `scripts/export_rust_fixtures.py` writes from the Python
+  implementation (`make check` fails if they are out of date). CI runs `cargo fmt`,
+  `cargo clippy` and `cargo test`. The report and `validate` are not ported yet.
 
 ## [0.1.0] - 2026-09-30
 

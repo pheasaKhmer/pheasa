@@ -244,3 +244,40 @@ lm-evaluation-harness, rejected because it has no cost controls and is centered 
 models. Both remain export targets.
 
 **Decided by:** engineering.
+
+## D-015 · 2026-10-06 · Rust port of the normalizer, held to the Python output
+
+**Context:** A Rust keyboard core needs the normalizer on phones, where Python is not
+available. Normalized text is hashed and deduplicated (D-013), so text normalized on a
+phone must be byte-identical to text normalized by the Python package, for every input
+and option.
+
+**Choice:** A Rust crate, `pheasa`, in `rust/`, that ports `normalize` with all its
+options (Stages 1 to 4). The Python implementation stays the reference, and
+`NORMALIZATION_VERSION` names the output of both: a rule change needs a new version and
+lands in both. `scripts/export_rust_fixtures.py` writes `rust/tests/fixtures/parity.tsv`
+from the Python implementation: every golden fixture input, every Khmer and
+test-alphabet character in a few contexts, and 22,500 strings built from the alphabets
+and tokens of the property tests with fixed seeds, each with its output under every
+combination of options that can change it. The Rust tests require identical output for
+all 24,040 inputs under all 36 option combinations. `make check` fails if the file is
+out of date, and CI runs `cargo fmt`, `cargo clippy` (pedantic) and `cargo test`. NFC of
+non-Khmer text comes from the `unicode-normalization` crate, pinned to 0.1.25 (Unicode
+17.0.0), while Python uses its interpreter's `unicodedata` (Unicode 14.0.0 to 16.0.0 on
+the supported versions). Unicode's normalization stability policy makes their NFC the
+same for every character assigned in both versions, which a comparison of every code
+point against Python 3.12 and 3.14 confirmed. Characters assigned in between can
+normalize differently, as they already can between Python versions (spec rule 1.3). The
+report (`report=True`) and `validate` are not ported yet.
+
+**Alternatives:** Calling Python from the keyboard, rejected because embedding an
+interpreter in a phone keyboard costs size and startup time. A C library used by both
+languages, rejected because it would replace the reference implementation and add a
+native build to the Python package. Porting only the Stage 2 reorder, rejected because
+the folds and options also change the output, so hashes would differ. Writing NFC by
+hand to avoid the dependency, rejected because it needs the full Unicode decomposition
+and composition tables. Pinning `unicode-normalization` exactly means a dependent cannot
+pick up a newer 0.1 release while it depends on this crate; that is accepted, because a
+newer release can change NFC and so the output.
+
+**Decided by:** engineering.

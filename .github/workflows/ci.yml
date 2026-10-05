@@ -22,3 +22,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --locked
       - run: make check
+
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v7
+      # rustup is on the runner; rust/rust-toolchain.toml picks the version and components.
+      - run: rustup show active-toolchain || rustup toolchain install
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked

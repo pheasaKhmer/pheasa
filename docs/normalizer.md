@@ -100,6 +100,43 @@ Pheasa follows UTN #61 and is tested against SIL's reference script `khnormal`. 
 agree except in the cases listed in the spec under "Differences from the oracle": mostly
 malformed input, where Pheasa leaves the text alone and SIL's script does not.
 
+## Rust
+
+The crate `pheasa` in [`rust/`](../rust/README.md) is a port of `normalize` for places
+without Python, such as keyboards on phones. For every input and every combination of
+options it returns the same text as the Python package, and it carries the same
+`NORMALIZATION_VERSION`. The Python implementation is the reference: the crate's tests
+compare it with outputs generated from Python (D-015).
+
+```rust
+use pheasa::{Options, Zwsp, normalize, normalize_with};
+
+assert_eq!(normalize("ខែ្មរ"), "ខ្មែរ");
+let options = Options { zwsp: Zwsp::Strip, ..Options::default() };
+assert_eq!(normalize_with("ក\u{200B}ខ", options), "កខ");
+```
+
+`Options` has one field per Python option: `zwsp` (`Zwsp::Keep`, `Strip`, `Space`),
+`digits` (`Digits::Keep`, `Khmer`, `Ascii`), `fold_deprecated` and `preserve_coeng_da`.
+The report and `validate` are not ported yet.
+
+NFC of non-Khmer characters uses the `unicode-normalization` crate (Unicode 17.0.0), not
+Python's `unicodedata`. The two agree on every character assigned in both Unicode
+versions. A character assigned after the older of the two can normalize differently, as
+it can between Python versions. Khmer text is unaffected.
+
+Until the crate is published, depend on it through git, pinned to a commit:
+
+```toml
+[dependencies]
+pheasa = { git = "https://github.com/pheasaKhmer/pheasa", rev = "<commit>" }
+```
+
+To run its tests: `cd rust && cargo test`. The parity cases in
+`rust/tests/fixtures/parity.tsv` are written by
+`uv run python scripts/export_rust_fixtures.py`, and `make check` fails if they are out
+of date.
+
 ## Limits
 
 - Modern Khmer only. Middle Khmer final coengs (ZWJ + coeng) are kept at the end of the
