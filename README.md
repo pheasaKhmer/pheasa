@@ -56,6 +56,20 @@ codes. The rules are specified in [`spec/normalization.md`](https://github.com/p
 pip install pheasa
 ```
 
+## Rust
+
+A Rust port of the normalizer, for places without Python such as keyboards on phones,
+lives in [`rust/`](https://github.com/pheasaKhmer/pheasa/tree/main/rust). It gives the
+same output as the Python package for every input and option, under the same
+`NORMALIZATION_VERSION`, and is tested against cases generated from the Python
+implementation. The report and `validate` are not ported yet. Until the crate is
+published, depend on it through git:
+
+```toml
+[dependencies]
+pheasa = { git = "https://github.com/pheasaKhmer/pheasa", rev = "<commit>" }
+```
+
 ## Development
 
 Requires [uv](https://docs.astral.sh/uv/).
@@ -64,6 +78,9 @@ Requires [uv](https://docs.astral.sh/uv/).
 uv sync
 make check
 ```
+
+The Rust crate has its own checks: `cd rust && cargo test` (also `cargo clippy` and
+`cargo fmt --check`, as in CI).
 
 ## Acknowledgements
 

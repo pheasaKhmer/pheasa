@@ -59,6 +59,10 @@ assigned. Non-Khmer characters assigned after the interpreter's Unicode version 
 treated as unassigned by NFC, so mixed text containing them can normalize differently on
 older Pythons.
 
+The Rust port in `rust/` (D-015) uses the NFC data of the `unicode-normalization` crate,
+Unicode 17.0.0. It agrees with Python's on every character assigned in both versions, so
+the same caveat applies to characters assigned after the older of the two.
+
 NFC moves U+17D2 in front of a directly preceding U+17DD. In `1780 17DD 17D2 179A` this
 detaches the subscript: the result is `1780 17D2 17DD 179A`, where 179A starts a new
 cluster. The oracle, run on NFC input as the differential test requires, does the same.
@@ -324,6 +328,8 @@ alphabet the test uses.
 
 `NORMALIZATION_VERSION = "1"` fixes the behavior described here. Any change to the
 output for any input needs a new version, a CHANGELOG entry, and a DECISIONS entry.
+The Rust port in `rust/` implements the same rules and carries the same version (D-015);
+a new version applies to both.
 
 ## Test requirements (Phase 1b)
 
