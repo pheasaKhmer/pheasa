@@ -1,0 +1,24 @@
+[package]
+name = "pheasa"
+version = "0.1.0"
+description = "Khmer text normalization (Unicode Technical Note #61), with the same output as the Python package pheasa."
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+authors = ["Samputhy Khim"]
+repository = "https://github.com/pheasaKhmer/pheasa"
+readme = "README.md"
+keywords = ["khmer", "unicode", "normalization", "nlp"]
+categories = ["text-processing", "internationalization"]
+
+[dependencies]
+# Pinned exactly: its Unicode data (17.0.0 in 0.1.25) decides NFC for non-Khmer text, so
+# an update can change output. tests/unicode.rs fails if the version changes (D-015).
+unicode-normalization = "=0.1.25"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }

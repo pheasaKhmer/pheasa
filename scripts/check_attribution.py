@@ -15,6 +15,8 @@ OPTIONAL_GLOBS = [
     "site/**/*.html",
     "hf/**/README.md",
     "paper/**/*.tex",
+    "rust/README.md",
+    "rust/Cargo.toml",
 ]
 
 
