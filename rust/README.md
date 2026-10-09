@@ -70,6 +70,13 @@ repository root with `uv run python scripts/export_rust_fixtures.py`, after new 
 fixtures or a rule change (which also needs a new `NORMALIZATION_VERSION`). `make check`
 fails while they are out of date.
 
+## Releasing
+
+Bump `version` in `Cargo.toml`, merge, then tag the merge commit `rust-v<version>` and push
+the tag. The `Release (Rust)` workflow checks that the tag matches the version, runs the
+checks, and waits for approval in the `crates-io` environment before publishing through
+crates.io trusted publishing (D-016).
+
 ## License
 
 [Apache-2.0](https://github.com/pheasaKhmer/pheasa/blob/main/LICENSE).
