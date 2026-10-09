@@ -10,6 +10,9 @@ repository = "https://github.com/pheasaKhmer/pheasa"
 readme = "README.md"
 keywords = ["khmer", "unicode", "normalization", "nlp"]
 categories = ["text-processing", "internationalization"]
+# The parity fixture (about 2 MB) and its test check the port against the Python package in
+# this repository and its CI; the published crate does not need them.
+exclude = ["tests/fixtures/", "tests/parity.rs", "rust-toolchain.toml"]
 
 [dependencies]
 # Pinned exactly: its Unicode data (17.0.0 in 0.1.25) decides NFC for non-Khmer text, so
