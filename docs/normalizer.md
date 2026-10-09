@@ -125,11 +125,11 @@ Python's `unicodedata`. The two agree on every character assigned in both Unicod
 versions. A character assigned after the older of the two can normalize differently, as
 it can between Python versions. Khmer text is unaffected.
 
-Until the crate is published, depend on it through git, pinned to a commit:
+It is on [crates.io](https://crates.io/crates/pheasa):
 
 ```toml
 [dependencies]
-pheasa = { git = "https://github.com/pheasaKhmer/pheasa", rev = "<commit>" }
+pheasa = "0.1"
 ```
 
 To run its tests: `cd rust && cargo test`. The parity cases in

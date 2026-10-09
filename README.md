@@ -62,12 +62,12 @@ A Rust port of the normalizer, for places without Python such as keyboards on ph
 lives in [`rust/`](https://github.com/pheasaKhmer/pheasa/tree/main/rust). It gives the
 same output as the Python package for every input and option, under the same
 `NORMALIZATION_VERSION`, and is tested against cases generated from the Python
-implementation. The report and `validate` are not ported yet. Until the crate is
-published, depend on it through git:
+implementation. The report and `validate` are not ported yet. It is on
+[crates.io](https://crates.io/crates/pheasa):
 
 ```toml
 [dependencies]
-pheasa = { git = "https://github.com/pheasaKhmer/pheasa", rev = "<commit>" }
+pheasa = "0.1"
 ```
 
 ## Development

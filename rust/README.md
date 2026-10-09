@@ -49,15 +49,12 @@ and `pheasa.validate`.
 
 ## Install
 
-Until the crate is published on crates.io, depend on it through git, pinned to a
-commit:
+From [crates.io](https://crates.io/crates/pheasa) (`cargo add pheasa`):
 
 ```toml
 [dependencies]
-pheasa = { git = "https://github.com/pheasaKhmer/pheasa", rev = "<commit>" }
+pheasa = "0.1"
 ```
-
-Cargo finds the crate in the `rust/` directory of the repository.
 
 ## Development
 
