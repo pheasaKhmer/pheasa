@@ -281,3 +281,23 @@ pick up a newer 0.1 release while it depends on this crate; that is accepted, be
 newer release can change NFC and so the output.
 
 **Decided by:** engineering.
+
+## D-016 · 2026-10-10 · Rust crate releases through crates.io trusted publishing
+
+**Context:** The Rust crate was first published by hand with a crates.io API token,
+because trusted publishing can only be set up for a crate that already exists. Later
+releases should not need a long-lived token, for the same reason as D-003.
+
+**Choice:** Pushing a `rust-v*` tag runs `release-rust.yml`. A first job checks that the
+tag matches the crate version and runs fmt, clippy, the tests and a publishing dry run;
+then a job in the `crates-io` environment, which needs the maintainer's approval and only
+accepts `rust-v*` tags, exchanges the workflow's OIDC token for a short-lived crates.io
+token with `rust-lang/crates-io-auth-action` and publishes. Rust tags are prefixed so
+they never start the PyPI release, which runs on `v*` tags.
+
+**Alternatives:** A crates.io API token stored as a repository secret, rejected because it
+is long-lived. Publishing by hand, rejected because releases would depend on one machine's
+credentials and skip the checks.
+
+**Decided by:** engineering, after the maintainer asked for trusted publishing.
+
