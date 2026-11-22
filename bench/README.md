@@ -10,6 +10,7 @@ the reviewer protocol and release targets are in [`SCOPE.md`](SCOPE.md).
 |---|---|
 | `tasks/<name>.toml` | A task: prompt template, scorer, output token limit, version |
 | `tasks/<name>.md` | The task's one-page spec: purpose, item format, scoring, risks |
+| `CANARY` | The canary string (BIG-bench style) for test files |
 | `tasks/versions.lock.json` | Prompt hash per task version (`scripts/lock_tasks.py`) |
 | `items/<name>/` | Verified items, one JSON object per line |
 | `drafts/` | Unverified draft items; never scored as results |
@@ -68,6 +69,7 @@ per task, many differences between models will not be significant, and results s
 - An item enters a test split only with `verified_by` and `verified_at`
   (`scripts/validate_items.py`). Draft items go to `drafts/` and only a person promotes
   them.
-- Test files carry the canary string from `CANARY` once it exists.
+- Every test-split file starts with the canary from `CANARY` as a header line,
+  `{"canary": "..."}`. The canary is fixed and never regenerated; a test pins it.
 - Changing a task's prompt requires a new version (checked by `make check`) and a
   CHANGELOG entry.
