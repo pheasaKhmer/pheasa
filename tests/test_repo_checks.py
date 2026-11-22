@@ -82,9 +82,17 @@ def test_canary_is_fixed():
     assert validate_items.CANARY_PATTERN.fullmatch(CANARY)
 
 
+def bench_with_task(root: Path, task: str = "t", canary: bool = True) -> Path:
+    """A bench/ folder with one task spec; returns bench/items/<task>/."""
+    (root / "bench" / "tasks").mkdir(parents=True)
+    (root / "bench" / "tasks" / f"{task}.toml").write_text("", encoding="utf-8")
+    if canary:
+        (root / "bench" / "CANARY").write_text(CANARY + "\n", encoding="utf-8")
+    return root / "bench" / "items" / task
+
+
 def test_canary_header_required_in_test_split(tmp_path):
-    (tmp_path / "bench").mkdir()
-    (tmp_path / "bench" / "CANARY").write_text(CANARY + "\n")
+    bench_with_task(tmp_path)
     test_file = tmp_path / "bench" / "items" / "t" / "test.jsonl"
     header = "bench/items/t/test.jsonl: first line must be the canary header"
 
@@ -102,6 +110,7 @@ def test_canary_header_required_in_test_split(tmp_path):
 
 
 def test_test_split_needs_a_well_formed_canary_file(tmp_path):
+    bench_with_task(tmp_path, canary=False)
     test_file = tmp_path / "bench" / "items" / "t" / "test.jsonl"
     write_jsonl(test_file, [{"canary": CANARY}, VERIFIED])
     assert validate_items.check(tmp_path) == [
@@ -110,6 +119,46 @@ def test_test_split_needs_a_well_formed_canary_file(tmp_path):
     (tmp_path / "bench" / "CANARY").write_text("canary-guid-1234\n")
     errors = validate_items.check(tmp_path)
     assert errors[0].startswith("bench/CANARY: not a canary line")
+
+
+def test_split_files_and_unique_ids(tmp_path):
+    folder = bench_with_task(tmp_path)
+    write_jsonl(folder / "dev.jsonl", [VERIFIED])
+    write_jsonl(folder / "heldout.jsonl", [{"canary": CANARY}, {**VERIFIED, "id": 2}])
+    (folder / ".gitkeep").write_text("")
+    assert validate_items.check(tmp_path) == []
+
+    # The held-out split needs the canary too; an ID may not repeat across splits.
+    write_jsonl(folder / "heldout.jsonl", [VERIFIED])
+    assert validate_items.check(tmp_path) == [
+        "bench/items/t/heldout.jsonl: first line must be the canary header "
+        "{'canary': <bench/CANARY>}",
+        "bench/items/t/heldout.jsonl: item '1' also in dev.jsonl",
+    ]
+
+
+def test_items_folder_rules(tmp_path):
+    folder = bench_with_task(tmp_path)
+    write_jsonl(folder / "dev.jsonl", [{"id": 1, "verified": False}])
+    write_jsonl(folder / "train.jsonl", [VERIFIED])
+    write_jsonl(tmp_path / "bench" / "items" / "nospec" / "dev.jsonl", [VERIFIED])
+    errors = validate_items.check(tmp_path)
+    assert "bench/items/t/dev.jsonl:1: item is not verified" in errors
+    assert any(e.startswith("bench/items/t/train.jsonl: unknown file") for e in errors)
+    assert "bench/items/nospec: no task spec bench/tasks/nospec.toml" in errors
+
+
+def test_v1_item_folders_and_heldout_ignored():
+    root = SCRIPTS.parent
+    v1 = {
+        "encoding-equivalence",
+        "numbers-and-dates",
+        "register-vocabulary",
+        "spelling-correction",
+        "word-segmentation",
+    }
+    assert {p.name for p in (root / "bench" / "items").iterdir() if p.is_dir()} == v1
+    assert "bench/items/*/heldout.jsonl" in (root / ".gitignore").read_text().splitlines()
 
 
 GOLDEN_OK = {

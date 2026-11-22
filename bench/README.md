@@ -12,8 +12,10 @@ the reviewer protocol and release targets are in [`SCOPE.md`](SCOPE.md).
 | `tasks/<name>.md` | The task's one-page spec: purpose, item format, scoring, risks |
 | `CANARY` | The canary string (BIG-bench style) for test files |
 | `tasks/versions.lock.json` | Prompt hash per task version (`scripts/lock_tasks.py`) |
-| `items/<name>/` | Verified items, one JSON object per line |
-| `drafts/` | Unverified draft items; never scored as results |
+| `items/<name>/dev.jsonl` | Verified dev items, one JSON object per line (public) |
+| `items/<name>/test.jsonl` | Verified public test items, after the canary header line |
+| `items/<name>/heldout.jsonl` | Verified held-out test items; git-ignored and kept privately |
+| `drafts/<name>/` | Unverified draft items, local only; never scored as results |
 | `cache/` | Raw model responses (not committed) |
 
 Benchmark v1 has five tasks (D-017): encoding-equivalence, numbers-and-dates,
@@ -45,7 +47,7 @@ items and scorers (install `inspect-ai` first):
 
 ```bash
 inspect eval src/pheasa/bench/inspect_task.py@pheasa \
-  -T task=bench/tasks/NAME.toml -T items=bench/items/NAME/pilot.jsonl -T lang=en --model MODEL
+  -T task=bench/tasks/NAME.toml -T items=bench/items/NAME/dev.jsonl -T lang=en --model MODEL
 ```
 
 Inspect's own cache and limits apply there; the `--dry-run` estimate and the run-wide
