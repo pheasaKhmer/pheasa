@@ -29,6 +29,27 @@ All notable changes to this project are documented here. The format follows
   inputs whose outputs `scripts/export_rust_fixtures.py` writes from the Python
   implementation (`make check` fails if they are out of date). CI runs `cargo fmt`,
   `cargo clippy` and `cargo test`. The report and `validate` are not ported yet.
+- Benchmark v1 scope in `bench/SCOPE.md` (D-017): five tasks, item targets, dev /
+  public test / held-out splits, the reviewer protocol, planned models and analysis, and
+  release targets.
+- The benchmark canary string in `bench/CANARY`. Every test and held-out split file
+  must start with it as a header line (`scripts/validate_items.py`).
+- Item folders `bench/items/<task>/` for the five v1 tasks. Allowed split files are
+  `dev.jsonl`, `test.jsonl`, `heldout.jsonl` (git-ignored, kept outside the public
+  repository) and `pilot.jsonl`; every item must be verified and item IDs may not repeat
+  across a task's splits.
+- An extract of Unicode CLDR 49's Khmer number and calendar data in `data/cldr-km/`
+  (`scripts/extract_cldr_km.py`), with the Unicode license.
+- `scripts/draft_numbers_dates.py`, which drafts numbers-and-dates items by rule from
+  the CLDR data, and `scripts/draft_encoding_items.py`, which drafts encoding-equivalence
+  items from Khmer text. Both write only to `bench/drafts/`.
+
+### Changed
+
+- reading-comprehension, translation-en-km and translation-km-en are deferred to
+  benchmark v2 (D-017); their specs stay in `bench/tasks/`.
+- The landscape report records SEA-HELM's Khmer datasets: SEA-NLI is marked native,
+  SEA-IFEval and SEA MT-Bench human-translated.
 
 ## [0.1.0] - 2026-09-30
 
