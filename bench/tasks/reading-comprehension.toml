@@ -1,4 +1,4 @@
-# Draft task spec (version 0.x = not approved yet). See reading-comprehension.md.
+# Deferred to benchmark v2 (D-017). Draft task spec (version 0.x = not approved yet). See reading-comprehension.md.
 name = "reading-comprehension"
 version = "0.2"
 description = "Answer a multiple-choice question about a short Khmer passage."

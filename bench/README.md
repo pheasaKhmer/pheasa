@@ -1,7 +1,8 @@
-# Benchmark (pilot)
+# Benchmark
 
 The Khmer benchmark's tasks, items and harness configuration. The harness itself is
-`pheasa.bench` (decision D-014); run it with `pheasa bench`.
+`pheasa.bench` (decision D-014); run it with `pheasa bench`. What v1 covers, its splits,
+the reviewer protocol and release targets are in [`SCOPE.md`](SCOPE.md).
 
 ## Layout
 
@@ -14,7 +15,10 @@ The Khmer benchmark's tasks, items and harness configuration. The harness itself
 | `drafts/` | Unverified draft items; never scored as results |
 | `cache/` | Raw model responses (not committed) |
 
-All eight tasks are drafts (version 0.x) until a native speaker approves them.
+Benchmark v1 has five tasks (D-017): encoding-equivalence, numbers-and-dates,
+register-vocabulary, spelling-correction and word-segmentation. reading-comprehension,
+translation-en-km and translation-km-en are deferred to v2; their specs stay here, marked
+deferred. Every task is a draft (version 0.x) until a native speaker approves it.
 
 ## Running
 

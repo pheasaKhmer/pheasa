@@ -1,4 +1,6 @@
-# Task: reading-comprehension (draft, version 0.2)
+# Task: reading-comprehension (deferred to v2, draft, version 0.2)
+
+**Deferred to benchmark v2** (D-017, `bench/SCOPE.md`). The spec is kept for reference; no v1 items are made for it.
 
 Answer a multiple-choice question about a short Khmer passage.
 
