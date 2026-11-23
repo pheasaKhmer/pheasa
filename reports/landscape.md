@@ -33,21 +33,27 @@ between them. It is the starting map for Pheasa's benchmark and corpus work.
   CC-100, CulturaX) include Khmer, and several Khmer-only collections were updated in
   2026.
   Many community datasets state no source or no license.
-- **Evaluation is the thinnest layer.** The multilingual benchmarks that include Khmer
-  (FLORES, Belebele, SIB-200, NTREX) are translations of English material. No
-  Khmer-native LLM benchmark with released data was found.
+- **Evaluation is the thinnest layer.** Most multilingual benchmarks that include Khmer
+  (FLORES, Belebele, SIB-200, NTREX) are translations of English material. SEA-HELM
+  marks its Khmer SEA-NLI data as native; its Khmer instruction-following and chat sets
+  are human translations. No benchmark of Khmer-specific skills (encoding, word
+  segmentation, register, spelling, number words) was found.
 - **Licenses are a real constraint.** A fifth of the resources have no license that
   could be found, and several of the most useful ones are non-commercial (NLLB-200,
   MMS, the Khmer part of the Asian Language Treebank).
 
 ## Gap analysis
 
-1. **No Khmer-native benchmark for language models.** Global-MMLU covers 42 languages
-   and not Khmer (checked in its Hugging Face configuration list). SEA-HELM lists Khmer
-   tasks (multiple-choice QA, instruction following and MT-Bench, per its README);
-   whether its items were written in Khmer or translated was not verified. Belebele and
-   SIB-200 are built on FLORES sentences translated from English. This is the gap
-   Pheasa's benchmark (roadmap Phase 4) is meant to fill.
+1. **No benchmark of Khmer-specific skills for language models.** Global-MMLU covers 42
+   languages and not Khmer (checked in its Hugging Face configuration list). SEA-HELM's
+   [datasets page](https://github.com/aisingapore/SEA-HELM/blob/main/docs/datasets_and_prompts.md)
+   (checked 2026-11-23) marks its Khmer SEA-NLI data "Native" (CC BY-SA 4.0) and its
+   Khmer SEA-IFEval and SEA MT-Bench data "Human translation"; a Khmer MCQA set added on
+   20 Jan 2026 is listed only in the README changelog, with no stated origin. Belebele
+   and SIB-200 are built on FLORES sentences translated from English. None of these
+   tests skills that exist only in Khmer: encoding variants, word segmentation, register
+   vocabulary, spelling and number words. That is the gap Pheasa's benchmark (roadmap
+   Phase 4) is meant to fill.
 2. **Contamination-safe evaluation needs gating.** FLORES+ and FLORES-200 are gated on
    Hugging Face to limit training contamination. Any new Khmer test set needs the same
    care: a canary string and a held-out part.
@@ -93,7 +99,7 @@ between them. It is the starting map for Pheasa's benchmark and corpus work.
 | [FLORES-200 (facebook/flores)](https://huggingface.co/datasets/facebook/flores) | 200-language MT evaluation benchmark including khm_Khmr | multilingual | khm_Khmr dev and devtest; counts unknown | CC-BY-SA-4.0 | gated | 2026-05 | Auto-gated; khm_Khmr present in config list. |
 | [Khmer OCR Benchmark Dataset (KHOB)](https://github.com/EKYCSolutions/khmer-ocr-benchmark-dataset) | OCR benchmark with clean digital, scene text and handwritten levels plus evaluation script | only | unknown | MIT | open | 2026-01 | Data hosted on Google Drive links from the README; size not stated in repo. |
 | [NTREX-128 (khm)](https://github.com/MicrosoftTranslator/NTREX) | English-to-128-language news MT test references; includes Khmer file | multilingual | newstest2019-ref.khm.txt, 805,424 bytes | CC-BY-SA-4.0 | open | 2024-06 | Human translations of English news test set; Khmer file confirmed in NTREX-128 directory listing. |
-| [SEA-HELM](https://github.com/aisingapore/SEA-HELM) | Southeast Asian LLM evaluation suite; Khmer MCQA, SEA-IFEval and SEA MT-Bench added 2026-01 | multilingual | unknown | MIT | open | 2026-08 | README changelog lists Khmer under a 20 Jan 2026 update; Khmer item origin (native or translated) not checked. (confidence medium: Khmer claim from README changelog only; item counts and construction not checked.) |
+| [SEA-HELM](https://github.com/aisingapore/SEA-HELM) | Southeast Asian LLM evaluation suite; Khmer in SEA-NLI, SEA-IFEval, SEA MT-Bench and an MCQA set | multilingual | unknown | MIT | open | 2026-08 | Its datasets page (https://github.com/aisingapore/SEA-HELM/blob/main/docs/datasets_and_prompts.md, commit cc8e95a, 2026-06-19) lists Khmer in SEA-NLI (nativeness "Native", CC BY-SA 4.0), SEA-IFEval ("Human translation", CC-BY-4.0) and SEA MT-Bench ("Human Translation", CC BY-NC-SA 4.0). A Khmer MCQA set appears only in the README changelog (20 Jan 2026); its origin is not documented. MIT is the code license. (confidence medium: Nativeness and licenses read from the datasets page on 2026-11-23; item counts not given there and Khmer items not inspected.) |
 | [SIB-200 (khm_Khmr)](https://huggingface.co/datasets/Davlan/sib200) | Topic classification benchmark over 200 languages; khm_Khmr config | multilingual | khm_Khmr size unknown | CC-BY-SA-4.0 | open | 2024-02 | Built on FLORES-200 sentences with topic labels. |
 
 ### Datasets (42)

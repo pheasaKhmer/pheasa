@@ -24,3 +24,6 @@ bench/cache/
 
 # Rust build output
 /rust/target/
+
+# Held-out benchmark test split: kept outside the public repo (bench/SCOPE.md)
+bench/items/*/heldout.jsonl

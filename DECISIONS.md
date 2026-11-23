@@ -301,3 +301,25 @@ credentials and skip the checks.
 
 **Decided by:** engineering, after the maintainer asked for trusted publishing.
 
+## D-017 · 2026-11-23 · Benchmark v1 has five tasks
+
+**Context:** Phase 3 drafted eight task specs (Q-016). A citable v1 needs about 200
+verified items per generated task and 100–150 per hand-written task, a held-out test
+split and a second review of about 20% of items, all checked by native speakers, whose
+time is the scarcest resource. SEA-HELM already covers Khmer natural language inference
+natively and instruction following and chat through human translation; Belebele, FLORES
+and NTREX cover reading comprehension and translation through translated text.
+
+**Choice:** v1 has five tasks: encoding-equivalence and numbers-and-dates (generated,
+then verified), register-vocabulary and word-segmentation (hand-written or
+hand-segmented) and spelling-correction (correct sentences with one common misspelling
+inserted). reading-comprehension, translation-en-km and translation-km-en are deferred to
+v2; their specs stay in `bench/tasks/`, marked deferred. Scope, splits, reviewer
+protocol and release targets are in `bench/SCOPE.md`.
+
+**Alternatives:** All eight tasks, rejected because reading comprehension is the most
+expensive task to write and overlaps Belebele and SEA-NLI, and translation needs
+licensed references while FLORES and NTREX already exist. Fewer, larger tasks, rejected
+because the benchmark's point is breadth across skills specific to Khmer.
+
+**Decided by:** the human, 2026-11-23.

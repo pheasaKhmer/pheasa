@@ -1,0 +1,64 @@
+{
+ "cldr": "release-49",
+ "license": "Unicode-3.0",
+ "copyright": "Copyright © 1991-2026 Unicode, Inc.",
+ "sources": {
+  "rbnf-km.xml": {
+   "url": "https://raw.githubusercontent.com/unicode-org/cldr/release-49/common/rbnf/km.xml",
+   "sha256": "7489c3419298fdd0302883be7418b098c487275712103f8326523dde17d271a1"
+  },
+  "main-km.xml": {
+   "url": "https://raw.githubusercontent.com/unicode-org/cldr/release-49/common/main/km.xml",
+   "sha256": "638aee0e8b811279ac81b2a6705a00e512698f08c70059caa713802d2ff998f0"
+  },
+  "LICENSE": {
+   "url": "https://raw.githubusercontent.com/unicode-org/cldr/release-49/LICENSE",
+   "sha256": "65eb33419e22a297550a811b5b535f5e532f9a7e0114b516c0ea18afd53c3804"
+  }
+ },
+ "spellout": {
+  "spellout-numbering-year": "0: =%spellout-numbering=;",
+  "spellout-numbering": "-x: ដក​>>;\nx.x: <<​ចុច​>>>;\n0: សូន្យ;\n1: មួយ;\n2: ពីរ;\n3: បី;\n4: បួន;\n5: ប្រាំ;\n6: ប្រាំមួយ;\n7: ប្រាំពីរ;\n8: ប្រាំបី;\n9: ប្រាំបួន;\n10: ដប់[​>>];\n20: ម្ភៃ[​>>];\n30: សាមសិប[​>>];\n40: សែសិប[​>>];\n50: ហាសិប[​>>];\n60: ហុកសិប[​>>];\n70: ចិតសិប[​>>];\n80: ប៉ែតសិប[​>>];\n90: កៅសិប[​>>];\n100: <<​រយ[​>>];\n1000: <<​ពាន់[​>>];\n10000: <<​ម៉ឺន[​>>];\n100000: <<​សែន[​>>];\n1000000: <<​លាន[​>>];\n10000000000: <<​ពាន់​កោដិ[​>>];\n1000000000000: =#,##0=;",
+  "spellout-cardinal": "0: =%spellout-numbering=;",
+  "spellout-ordinal": "0: ទី=%spellout-cardinal=;"
+ },
+ "months_wide": [
+  "មករា",
+  "កុម្ភៈ",
+  "មីនា",
+  "មេសា",
+  "ឧសភា",
+  "មិថុនា",
+  "កក្កដា",
+  "សីហា",
+  "កញ្ញា",
+  "តុលា",
+  "វិច្ឆិកា",
+  "ធ្នូ"
+ ],
+ "days_wide": [
+  "អាទិត្យ",
+  "ច័ន្ទ",
+  "អង្គារ",
+  "ពុធ",
+  "ព្រហស្បតិ៍",
+  "សុក្រ",
+  "សៅរ៍"
+ ],
+ "day_order": [
+  "sun",
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat"
+ ],
+ "date_patterns": {
+  "full": "EEEE d MMMM y",
+  "long": "d MMMM y",
+  "medium": "d MMM y",
+  "short": "d/M/yy"
+ },
+ "native_numbering": "khmr"
+}

@@ -1,4 +1,4 @@
-# Draft task spec (version 0.x = not approved yet). See translation-km-en.md.
+# Deferred to benchmark v2 (D-017). Draft task spec (version 0.x = not approved yet). See translation-km-en.md.
 name = "translation-km-en"
 version = "0.2"
 description = "Translate a Khmer sentence into English."

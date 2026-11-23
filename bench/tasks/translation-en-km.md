@@ -1,4 +1,6 @@
-# Task: translation-en-km (draft, version 0.2)
+# Task: translation-en-km (deferred to v2, draft, version 0.2)
+
+**Deferred to benchmark v2** (D-017, `bench/SCOPE.md`). The spec is kept for reference; no v1 items are made for it.
 
 Translate an English sentence into Khmer.
 

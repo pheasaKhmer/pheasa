@@ -1,7 +1,8 @@
-# Benchmark (pilot)
+# Benchmark
 
 The Khmer benchmark's tasks, items and harness configuration. The harness itself is
-`pheasa.bench` (decision D-014); run it with `pheasa bench`.
+`pheasa.bench` (decision D-014); run it with `pheasa bench`. What v1 covers, its splits,
+the reviewer protocol and release targets are in [`SCOPE.md`](SCOPE.md).
 
 ## Layout
 
@@ -9,12 +10,18 @@ The Khmer benchmark's tasks, items and harness configuration. The harness itself
 |---|---|
 | `tasks/<name>.toml` | A task: prompt template, scorer, output token limit, version |
 | `tasks/<name>.md` | The task's one-page spec: purpose, item format, scoring, risks |
+| `CANARY` | The canary string (BIG-bench style) for test files |
 | `tasks/versions.lock.json` | Prompt hash per task version (`scripts/lock_tasks.py`) |
-| `items/<name>/` | Verified items, one JSON object per line |
-| `drafts/` | Unverified draft items; never scored as results |
+| `items/<name>/dev.jsonl` | Verified dev items, one JSON object per line (public) |
+| `items/<name>/test.jsonl` | Verified public test items, after the canary header line |
+| `items/<name>/heldout.jsonl` | Verified held-out test items; git-ignored and kept privately |
+| `drafts/<name>/` | Unverified draft items, local only; never scored as results |
 | `cache/` | Raw model responses (not committed) |
 
-All eight tasks are drafts (version 0.x) until a native speaker approves them.
+Benchmark v1 has five tasks (D-017): encoding-equivalence, numbers-and-dates,
+register-vocabulary, spelling-correction and word-segmentation. reading-comprehension,
+translation-en-km and translation-km-en are deferred to v2; their specs stay here, marked
+deferred. Every task is a draft (version 0.x) until a native speaker approves it.
 
 ## Running
 
@@ -40,7 +47,7 @@ items and scorers (install `inspect-ai` first):
 
 ```bash
 inspect eval src/pheasa/bench/inspect_task.py@pheasa \
-  -T task=bench/tasks/NAME.toml -T items=bench/items/NAME/pilot.jsonl -T lang=en --model MODEL
+  -T task=bench/tasks/NAME.toml -T items=bench/items/NAME/dev.jsonl -T lang=en --model MODEL
 ```
 
 Inspect's own cache and limits apply there; the `--dry-run` estimate and the run-wide
@@ -64,6 +71,7 @@ per task, many differences between models will not be significant, and results s
 - An item enters a test split only with `verified_by` and `verified_at`
   (`scripts/validate_items.py`). Draft items go to `drafts/` and only a person promotes
   them.
-- Test files carry the canary string from `CANARY` once it exists.
+- Every test-split file starts with the canary from `CANARY` as a header line,
+  `{"canary": "..."}`. The canary is fixed and never regenerated; a test pins it.
 - Changing a task's prompt requires a new version (checked by `make check`) and a
   CHANGELOG entry.
